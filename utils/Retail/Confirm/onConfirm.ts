@@ -229,19 +229,19 @@ export const checkOnConfirm = (data: any) => {
         return item?.code == "bpp_terms"
       })[0]
       const list = bpp_terms_obj.list
-      const np_type_arr = list.filter((item: any) => item.code === "np_type" && item.value === "ISN");
+      const np_type_arr = list.filter((item: any) => item.code === "np_type");
       const np_type_on_search = getValue(`${ApiSequence.ON_SEARCH}np_type`)
-      let np_type = "no_np_type_found!"
+      let np_type = ""
 
       if (np_type_arr.length > 0) {
-        np_type = "ISN"
+        np_type = np_type_arr[0].value
       }
       else {
         const key = 'message.order.tags[0].list'
         onCnfrmObj[key] = `np_type not found in on_confirm`
       }
 
-      if (np_type != np_type_on_search) {
+      if (np_type && np_type != np_type_on_search) {
         const key = 'message.order.tags[0].list'
         onCnfrmObj[key] = `np_type of on_search is not same to np_type of on_confirm`
       }
@@ -576,7 +576,7 @@ export const checkOnConfirm = (data: any) => {
       for (const tag of tags) {
         if (tag.code === 'bpp_terms') {
           const result = compareLists(tag.list, list_ON_INIT)
-          if (result) {
+          if (result.length > 0) {
             onCnfrmObj['message/order/tags/bpp_terms'] =
               `List of bpp_terms mismatched in message/order/tags/bpp_terms for ${constants.ON_INIT} and ${constants.ON_CONFIRM}`
           }
