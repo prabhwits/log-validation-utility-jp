@@ -412,6 +412,44 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any) => {
       }
     }
 
+    try {
+      // Checking fulfillment.id, fulfillment.type and tracking
+      logger.info('Checking fulfillment.id, fulfillment.type and tracking')
+      on_update.fulfillments.forEach((ff: any) => {
+        let ffId = ""
+        let ffType = ""
+
+        if (!ff.id) {
+          logger.info(`Fulfillment Id must be present `)
+          onupdtObj["ffId"] = `Fulfillment Id must be present`
+        }
+        if (!ff.type) {
+          logger.info(`Fulfillment Type must be present`)
+          onupdtObj["ffType"] = `Fulfillment Type must be present`
+        }
+
+        ffType = ff.type
+        ffId = ff.id
+
+        if (ffType != "Return" && ffType != "Cancel") {
+          if (ffId) {
+          if ((ff.tracking === false || ff.tracking === true)) {
+              if (getValue(`${ffId}_tracking`) != ff.tracking) {
+                logger.info(`Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`)
+                onupdtObj["ffTracking"] = `Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`
+              }
+            }
+            else {
+              logger.info(`Tracking must be present for fulfillment ID: ${ff.id} in boolean form`)
+              onupdtObj["ffTracking"] = `Tracking must be present for fulfillment ID: ${ff.id} in boolean form`
+            }
+          }
+        }
+      })
+    } catch (error: any) {
+      logger.info(`Error while checking fulfillments id, type and tracking in /${constants.ON_STATUS}`)
+    }
+
     if (flow === '6-a') {
       flowSixAChecks(message.order)
     }

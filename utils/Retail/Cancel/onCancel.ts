@@ -50,20 +50,18 @@ export const checkOnCancel = (data: any, msgIdSet: any) => {
       Object.assign(onCnclObj, contextRes.ERRORS)
     }
 
-    if(flow === '4')
-    {
+    if (flow === '4') {
       try {
         logger.info(`Comparing Message Ids of /${constants.CANCEL} and /${constants.ON_CANCEL}`)
         if (!_.isEqual(getValue(`${ApiSequence.CANCEL}_msgId`), context.message_id)) {
-          onCnclObj[`${ApiSequence.ON_CANCEL}_msgId`]  = `Message Ids for /${constants.CANCEL} and /${constants.ON_CANCEL} api should be same`
+          onCnclObj[`${ApiSequence.ON_CANCEL}_msgId`] = `Message Ids for /${constants.CANCEL} and /${constants.ON_CANCEL} api should be same`
         }
       } catch (error: any) {
         logger.error(`!!Error while checking message id for /${constants.ON_CANCEL}, ${error.stack}`)
       }
     }
 
-    if(flow === '5')
-    {
+    if (flow === '5') {
       try {
         logger.info(`Adding Message Id /${constants.ON_CANCEL}`)
         if (msgIdSet.has(context.message_id)) {
@@ -411,6 +409,41 @@ export const checkOnCancel = (data: any, msgIdSet: any) => {
     }
 
     try {
+      // Checking fulfillment.id, fulfillment.type and tracking
+      logger.info('Checking fulfillment.id, fulfillment.type and tracking')
+      on_cancel.fulfillments.forEach((ff: any) => {
+        let ffId = ""
+        let ffType = ""
+
+        if (!ff.id) {
+          logger.info(`Fulfillment Id must be present `)
+          onCnclObj["ffId"] = `Fulfillment Id must be present`
+        }
+      
+
+        ffType = ff.type
+        ffId = ff.id
+
+        if (ffType != "Cancel" && ffType != "RTO") {
+          if (ffId) {
+          if ((ff.tracking === false || ff.tracking === true)) {
+              if (getValue(`${ffId}_tracking`) != ff.tracking) {
+                logger.info(`Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`)
+                onCnclObj["ffTracking"] = `Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`
+              }
+            }
+          }
+          else {
+            logger.info(`Tracking must be present for fulfillment ID: ${ff.id} in boolean form`)
+            onCnclObj["ffTracking"] = `Tracking must be present for fulfillment ID: ${ff.id} in boolean form`
+          }
+        }
+      })
+    } catch (error: any) {
+      logger.info(`Error while checking fulfillments id, type and tracking in /${constants.ON_INIT} `)
+    }
+
+    try {
       logger.info(`Checking payment object in /${constants.ON_CANCEL}`)
 
       if (!_.isEqual(on_cancel.payment['@ondc/org/settlement_details'][0], getValue('sttlmntdtls'))) {
@@ -521,7 +554,7 @@ export const checkOnCancel = (data: any, msgIdSet: any) => {
           const key = `missingDelivery`
           onCnclObj[key] = `Delivery object is mandatory for ${constants.ON_CANCEL}`
         } else {
-          
+
           // Checking for start object inside Delivery
           if (!_.isEmpty(DELobj[0]?.start)) {
             const del_obj_start = DELobj[0]?.start
@@ -655,8 +688,7 @@ export const checkOnCancel = (data: any, msgIdSet: any) => {
           const key = `missingPreCancel`
           onCnclObj[key] = `Pre Cancel is mandatory for ${constants.ON_CANCEL}`
         }
-        else
-        {
+        else {
           try {
             logger.info(`Comparing timestamp of ${flow == '4' ? constants.ON_CONFIRM : constants.ON_STATUS_OUT_FOR_DELIVERY} and /${constants.ON_CANCEL} pre_cancel state updated_at timestamp`)
             const timeStampObj = _.filter(preCancelObj[0]?.list, { code: 'updated_at' })
@@ -665,10 +697,8 @@ export const checkOnCancel = (data: any, msgIdSet: any) => {
               const key = `missingPrecancelUpdatedAttimeStamp`
               onCnclObj[key] = `Pre Cancel Updated at timeStamp is mandatory for ${constants.ON_CANCEL}`
             }
-            else
-            {
-              if(!_.isEqual(getValue('PreviousUpdatedTimestamp'),timeStampObj[0].value))
-              {
+            else {
+              if (!_.isEqual(getValue('PreviousUpdatedTimestamp'), timeStampObj[0].value)) {
                 logger.error(`precancel_state.updated_at of ${constants.ON_CANCEL} is not equal with the ${flow == '4' ? constants.ON_CONFIRM : constants.ON_STATUS_OUT_FOR_DELIVERY} order.updated_at`)
                 const key = `precancelState.updatedAt`
                 onCnclObj[key] = `precancel_state.updated_at of ${constants.ON_CANCEL} is not equal with the ${flow == '4' ? constants.ON_CONFIRM : constants.ON_STATUS_OUT_FOR_DELIVERY} order.updated_at`

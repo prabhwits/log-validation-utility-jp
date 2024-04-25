@@ -371,6 +371,27 @@ export const checkOnConfirm = (data: any) => {
           onCnfrmObj.ffId = `fulfillments[${i}].id is missing in /${constants.ON_CONFIRM}`
         }
 
+
+        if(!on_confirm.fulfillments[i].type)
+        {
+          const key = `ffID type`
+          onCnfrmObj[key] = `fulfillment type does not exist in /${constants.ON_SELECT}`
+        }
+
+        const ffId = on_confirm.fulfillments[i].id || ""
+        if(ffId){
+        if (on_confirm.fulfillments[i].tracking === false || on_confirm.fulfillments[i].tracking === true) {
+          if (getValue(`${ffId}_tracking`) != on_confirm.fulfillments[i].tracking) {
+            logger.info(`Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`)
+            onCnfrmObj["ffTracking"] = `Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`
+          }
+        }
+        else {
+          logger.info(`Tracking must be present for fulfillment ID: ${ffId} in boolean form`)
+          onCnfrmObj["ffTracking"] = `Tracking must be present for fulfillment ID: ${ffId} in boolean form`
+        }
+      }
+
         logger.info('Checking the fulfillments state')
 
         const ffDesc = on_confirm.fulfillments[i].state.descriptor

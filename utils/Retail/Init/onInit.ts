@@ -136,8 +136,7 @@ export const checkOnInit = (data: any) => {
       const np_type_on_search = getValue(`${ApiSequence.ON_SEARCH}np_type`)
       let tax_number: any = {}
       let provider_tax_number: any = {}
-      if(accept_bap_terms.length > 0)
-      {
+      if (accept_bap_terms.length > 0) {
         const key = 'message.order.tags[0].list'
         onInitObj[key] = `accept_bap_terms is not required for now!`
       }
@@ -272,6 +271,36 @@ export const checkOnInit = (data: any) => {
       })
     } catch (error: any) {
       logger.error(`Error while validating fulfillments, ${error.stack}`)
+    }
+
+    try {
+      // Checking fulfillment.id, fulfillment.type and tracking
+      logger.info('Checking fulfillment.id, fulfillment.type and tracking')
+      on_init.fulfillments.forEach((ff: any) => {
+        let ffId = ""
+
+        if (!ff.id) {
+          logger.info(`Fulfillment Id must be present `)
+          onInitObj["ffId"] = `Fulfillment Id must be present`
+        }
+
+        ffId = ff.id
+
+        if (ffId) {
+        if (ff.tracking === false || ff.tracking === true) {
+            if (getValue(`${ffId}_tracking`) != ff.tracking) {
+              logger.info(`Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`)
+              onInitObj["ffTracking"] = `Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`
+            }
+          }
+          else {
+            logger.info(`Tracking must be present for fulfillment ID: ${ff.id} in boolean form`)
+            onInitObj["ffTracking"] = `Tracking must be present for fulfillment ID: ${ff.id} in boolean form`
+          }
+        }
+      })
+    } catch (error: any) {
+      logger.info(`Error while checking fulfillments id, type and tracking in /${constants.ON_INIT}`)
     }
 
     try {
