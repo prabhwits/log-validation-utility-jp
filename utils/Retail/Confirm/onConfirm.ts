@@ -148,7 +148,7 @@ export const checkOnConfirm = (data: any) => {
         if (cnfrmOrdrCrtd && (!on_confirm.created_at || on_confirm.created_at != cnfrmOrdrCrtd)) {
           onCnfrmObj.crtdtmstmp = `order.created_at timestamp mismatches in /${constants.CONFIRM} and /${constants.ON_CONFIRM}`
         }
-        
+
         if (on_confirm.updated_at) {
           setValue('PreviousUpdatedTimestamp', on_confirm.updated_at)
         }
@@ -372,25 +372,24 @@ export const checkOnConfirm = (data: any) => {
         }
 
 
-        if(!on_confirm.fulfillments[i].type)
-        {
+        if (!on_confirm.fulfillments[i].type) {
           const key = `ffID type`
           onCnfrmObj[key] = `fulfillment type does not exist in /${constants.ON_SELECT}`
         }
 
         const ffId = on_confirm.fulfillments[i].id || ""
-        if(ffId){
-        if (on_confirm.fulfillments[i].tracking === false || on_confirm.fulfillments[i].tracking === true) {
-          if (getValue(`${ffId}_tracking`) != on_confirm.fulfillments[i].tracking) {
-            logger.info(`Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`)
-            onCnfrmObj["ffTracking"] = `Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`
+        if (getValue(`${ffId}_tracking`)) {
+          if (on_confirm.fulfillments[i].tracking === false || on_confirm.fulfillments[i].tracking === true) {
+            if (getValue(`${ffId}_tracking`) != on_confirm.fulfillments[i].tracking) {
+              logger.info(`Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`)
+              onCnfrmObj["ffTracking"] = `Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`
+            }
+          }
+          else {
+            logger.info(`Tracking must be present for fulfillment ID: ${ffId} in boolean form`)
+            onCnfrmObj["ffTracking"] = `Tracking must be present for fulfillment ID: ${ffId} in boolean form`
           }
         }
-        else {
-          logger.info(`Tracking must be present for fulfillment ID: ${ffId} in boolean form`)
-          onCnfrmObj["ffTracking"] = `Tracking must be present for fulfillment ID: ${ffId} in boolean form`
-        }
-      }
 
         logger.info('Checking the fulfillments state')
 

@@ -227,8 +227,8 @@ export const checkOnStatusDelivered = (data: any, state: string, msgIdSet: any) 
 
           ffId = ff.id
 
-          if (ffId) {
-              if (ff.tracking === false || ff.tracking === true) {
+          if (getValue(`${ffId}_tracking`)) {
+            if (ff.tracking === false || ff.tracking === true) {
               if (getValue(`${ffId}_tracking`) != ff.tracking) {
                 logger.info(`Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`)
                 onStatusObj["ffTracking"] = `Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`

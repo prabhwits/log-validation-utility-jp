@@ -234,8 +234,8 @@ export const checkConfirm = (data: any, msgIdSet: any) => {
         }
 
         const ffId = confirm.fulfillments[i].id || ""
-        if (ffId) {
-        if ((confirm.fulfillments[i].tracking === false || confirm.fulfillments[i].tracking === true)) {
+        if (getValue(`${ffId}_tracking`)) {
+          if ((confirm.fulfillments[i].tracking === false || confirm.fulfillments[i].tracking === true)) {
             if (getValue(`${ffId}_tracking`) != confirm.fulfillments[i].tracking) {
               logger.info(`Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`)
               cnfrmObj["ffTracking"] = `Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`

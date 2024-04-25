@@ -286,7 +286,7 @@ export const checkOnInit = (data: any) => {
 
         ffId = ff.id
 
-        if (ffId) {
+        if  (getValue(`${ffId}_tracking`)) {
         if (ff.tracking === false || ff.tracking === true) {
             if (getValue(`${ffId}_tracking`) != ff.tracking) {
               logger.info(`Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`)

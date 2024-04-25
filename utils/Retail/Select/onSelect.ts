@@ -528,7 +528,7 @@ export const checkOnSelect = (data: any) => {
       
       ffId = ff.id
 
-      if (ffId) {
+      if  (ffId) {
       if (ff.tracking === false || ff.tracking === true) {
           setValue(`${ffId}_tracking`, ff.tracking)
         }

@@ -419,23 +419,23 @@ export const checkOnCancel = (data: any, msgIdSet: any) => {
           logger.info(`Fulfillment Id must be present `)
           onCnclObj["ffId"] = `Fulfillment Id must be present`
         }
-      
+
 
         ffType = ff.type
         ffId = ff.id
 
         if (ffType != "Cancel" && ffType != "RTO") {
-          if (ffId) {
-          if ((ff.tracking === false || ff.tracking === true)) {
+          if (getValue(`${ffId}_tracking`)) {
+            if ((ff.tracking === false || ff.tracking === true)) {
               if (getValue(`${ffId}_tracking`) != ff.tracking) {
                 logger.info(`Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`)
                 onCnclObj["ffTracking"] = `Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`
               }
+              else {
+                logger.info(`Tracking must be present for fulfillment ID: ${ff.id} in boolean form`)
+                onCnclObj["ffTracking"] = `Tracking must be present for fulfillment ID: ${ff.id} in boolean form`
+              }
             }
-          }
-          else {
-            logger.info(`Tracking must be present for fulfillment ID: ${ff.id} in boolean form`)
-            onCnclObj["ffTracking"] = `Tracking must be present for fulfillment ID: ${ff.id} in boolean form`
           }
         }
       })
