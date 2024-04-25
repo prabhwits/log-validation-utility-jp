@@ -472,7 +472,7 @@ export const FnBonSearchSchema = {
                           },
                         },
                       },
-                      required: ['id','tags'],
+                      required: ['id', 'tags'],
                     },
                   },
                   items: {
@@ -991,7 +991,7 @@ export const FnBonSearchSchema = {
                                         properties: {
                                           value: {
                                             type: 'string',
-                                            enum: ['10','13'],
+                                            enum: ['10', '13'],
                                             errorMessage:
                                               "Value for 'type' must be enum for FnB - '10' (hyperlocal),'13' (polygon) only",
                                           },
