@@ -472,7 +472,7 @@ export const FnBonSearchSchema = {
                           },
                         },
                       },
-                      required: ['id', 'parent_category_id', 'tags'],
+                      required: ['id','tags'],
                     },
                   },
                   items: {
