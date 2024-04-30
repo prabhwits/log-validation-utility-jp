@@ -4,7 +4,6 @@ import { logger } from '../../../shared/logger'
 import { setValue, getValue } from '../../../shared/dao'
 import constants, { ApiSequence } from '../../../constants'
 import { validateSchema, isObjectEmpty, checkContext, checkGpsPrecision, emailRegex } from '../..'
-import { validateSchema, isObjectEmpty, checkContext, checkGpsPrecision, emailRegex } from '../..'
 import _, { isEmpty } from 'lodash'
 
 export const checkOnsearchIncremental = (data: any, msgIdSet: any) => {

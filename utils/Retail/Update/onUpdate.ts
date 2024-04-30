@@ -16,12 +16,6 @@ import {
   return_rejected_request_reasonCodes,
   return_request_reasonCodes,
 } from '../../../constants/reasonCode'
-import {
-  partcancel_return_reasonCodes,
-  return_rejected_request_reasonCodes,
-  return_request_reasonCodes,
-} from '../../../constants/reasonCode'
-
 export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementDetatilSet: any, flow: any) => {
   const onupdtObj: any = {}
   const quoteItemSet: any = new Set()
@@ -181,25 +175,26 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
       const settlement_details: any = on_update.payment['@ondc/org/settlement_details']
       settlement_details.map((data: any) => {
         if (data.settlement_type == 'upi' && data.settlement_counterparty == 'seller-app') {
-        if (data.settlement_type == 'upi' && data.settlement_counterparty == 'seller-app') {
-          if (!data.upi_address) {
-            onupdtObj[`message/order.payment`] =
-              `UPI_address is missing in /message/order/payment/@ondc/org/settlement_details`
-          }
-        }
-        if (flow === '6-a') {
-          settlementDetatilSet.add(settlement_details[0])
-        }
-        else {
-          settlementDetatilSet.forEach((obj1: any) => {
-            const exist = settlement_details.some((obj2: any) => {
-              return _.isEqual(obj1, obj2)
-
-            });
-            if (!exist) {
-              onupdtObj[`message/order.payment/@ondc/org/settlement_details`] = "Missing payment/@ondc/org/settlement_details as compare to the previous calls"
+          if (data.settlement_type == 'upi' && data.settlement_counterparty == 'seller-app') {
+            if (!data.upi_address) {
+              onupdtObj[`message/order.payment`] =
+                `UPI_address is missing in /message/order/payment/@ondc/org/settlement_details`
             }
-          });
+          }
+          if (flow === '6-a') {
+            settlementDetatilSet.add(settlement_details[0])
+          }
+          else {
+            settlementDetatilSet.forEach((obj1: any) => {
+              const exist = settlement_details.some((obj2: any) => {
+                return _.isEqual(obj1, obj2)
+
+              });
+              if (!exist) {
+                onupdtObj[`message/order.payment/@ondc/org/settlement_details`] = "Missing payment/@ondc/org/settlement_details as compare to the previous calls"
+              }
+            });
+          }
         }
       })
     } catch (error: any) {

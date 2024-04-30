@@ -49,7 +49,7 @@ export const checkOnSelect = (data: any) => {
   try {
     logger.info(`Comparing Message Ids of /${constants.SELECT} and /${constants.ON_SELECT}`)
     if (!_.isEqual(getValue(`${ApiSequence.SELECT}_msgId`), context.message_id)) {
-      errorObj[`${ApiSequence.ON_SELECT}_msgId`]  = `Message Ids for /${constants.SELECT} and /${constants.ON_SELECT} api should be same`
+      errorObj[`${ApiSequence.ON_SELECT}_msgId`] = `Message Ids for /${constants.SELECT} and /${constants.ON_SELECT} api should be same`
     }
   } catch (error: any) {
     logger.error(`!!Error while checking message id for /${constants.ON_SELECT}, ${error.stack}`)
@@ -147,8 +147,9 @@ export const checkOnSelect = (data: any) => {
     logger.info(`Comparing Message Ids of /${constants.SELECT} and /${constants.ON_SELECT}`)
     if (!_.isEqual(getValue(`${ApiSequence.SELECT}_msgId`), context.message_id)) {
       errorObj[`${ApiSequence.ON_SELECT}_msgId`] = `Message Ids for /${constants.SELECT} and /${constants.ON_SELECT} api should be same`
-    if (!_.isEqual(getValue(`${ApiSequence.SELECT}_msgId`), context.message_id)) {
-      errorObj[`${ApiSequence.ON_SELECT}_msgId`]  = `Message Ids for /${constants.SELECT} and /${constants.ON_SELECT} api should be same`
+      if (!_.isEqual(getValue(`${ApiSequence.SELECT}_msgId`), context.message_id)) {
+        errorObj[`${ApiSequence.ON_SELECT}_msgId`] = `Message Ids for /${constants.SELECT} and /${constants.ON_SELECT} api should be same`
+      }
     }
   } catch (error: any) {
     logger.error(`!!Error while checking message id for /${constants.ON_SELECT}, ${error.stack}`)
@@ -537,11 +538,11 @@ export const checkOnSelect = (data: any) => {
         logger.info(`Fulfillment Id must be present `)
         errorObj["ffId"] = `Fulfillment Id must be present`
       }
-      
+
       ffId = ff.id
 
-      if  (ffId) {
-      if (ff.tracking === false || ff.tracking === true) {
+      if (ffId) {
+        if (ff.tracking === false || ff.tracking === true) {
           setValue(`${ffId}_tracking`, ff.tracking)
         }
         else {

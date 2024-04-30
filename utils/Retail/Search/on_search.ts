@@ -29,7 +29,6 @@ import {applianceData} from '../../../constants/appliance'
 import { fashion } from '../../../constants/fashion'
 import { DOMAIN } from '../../../utils/enum'
 export const checkOnsearch = (data: any) => {
-export const checkOnsearch = (data: any) => {
   if (!data || isObjectEmpty(data)) {
     return { [ApiSequence.ON_SEARCH]: 'JSON cannot be empty' }
   }
