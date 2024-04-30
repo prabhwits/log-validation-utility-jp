@@ -245,7 +245,8 @@ export const checkOnConfirm = (data: any) => {
         onCnfrmObj[key] = `np_type not found in on_confirm`
       }
 
-      if (accept_bap_terms.length > 0) {
+      if(accept_bap_terms.length > 0)
+      {
         const key = 'message.order.tags[0].list'
         onCnfrmObj[key] = `accept_bap_terms is not required for now!`
       }
@@ -606,7 +607,7 @@ export const checkOnConfirm = (data: any) => {
           const result = compareLists(tag.list, list_ON_INIT)
           if (result.length > 0) {
             onCnfrmObj['message/order/tags/bpp_terms'] =
-              `List of bpp_terms mismatched in message/order/tags/bpp_terms for ${constants.ON_INIT} and ${constants.ON_CONFIRM}`
+              `List of bpp_terms mismatched in message/order/tags/bpp_terms for ${constants.ON_INIT} and ${constants.ON_CONFIRM} here ${result}`
           }
         }
       }
@@ -622,9 +623,12 @@ export const checkOnConfirm = (data: any) => {
 
       for (const tag of tags) {
         if (tag.code === 'bap_terms') {
-          onCnfrmObj['message/order/tags/bap_terms'] = `bap_terms terms is not required for now! in ${constants.ON_CONFIRM}`
+          const hasStaticTerms = tag.list.some((item: { code: string }) => item.code === 'static_terms');            
+          if (hasStaticTerms) {
+                onCnfrmObj['message/order/tags/bap_terms/static_terms'] = `static_terms is not required for now! in ${constants.ON_INIT}`;
+            } 
         }
-      }
+    }
     } catch (err: any) {
       logger.error(
         `Error while Checking bap_terms in ${constants.ON_CONFIRM}, ${err.stack} `,

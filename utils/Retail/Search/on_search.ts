@@ -24,10 +24,11 @@ import {
 import _ from 'lodash'
 import { compareSTDwithArea } from '../../index'
 import { BPCJSON, groceryJSON, healthJSON, homeJSON } from '../../../constants/category'
-import electronicsData from '../../../constants/electronics.json'
-import applianceData from '../../../constants/appliance.json'
+import {electronicsData} from '../../../constants/electronics'
+import {applianceData} from '../../../constants/appliance'
 import { fashion } from '../../../constants/fashion'
 import { DOMAIN } from '../../../utils/enum'
+export const checkOnsearch = (data: any) => {
 export const checkOnsearch = (data: any) => {
   if (!data || isObjectEmpty(data)) {
     return { [ApiSequence.ON_SEARCH]: 'JSON cannot be empty' }
@@ -858,7 +859,7 @@ export const checkOnsearch = (data: any) => {
                 if (statutory_reqs_prepackaged_food && !statutory_reqs_prepackaged_food[field]) {
                   const key = `prvdr${i}items${j}@ondc/org/statutory_reqs_prepackaged_food`
                   errorObj[key] =
-                    `In ONDC:RET10 @ondc/org/statutory_reqs_prepackaged_food following fields are valid 'nutritional_info', 'additives_info', 'brand_owner_FSSAI_license_no','other_FSSAI_license_no',
+                    `In ONDC:RET10 @ondc/org/statutory_reqs_prepackaged_food following fields are valid and required 'nutritional_info', 'additives_info','other_FSSAI_license_no',
                     'brand_owner_FSSAI_license_no','importer_FSSAI_license_no'`
                 }
               })

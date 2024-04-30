@@ -279,10 +279,6 @@ export const checkOnsearchFullCatalogRefresh = (data: any) => {
         const categories = prvdr['categories']
         categories.forEach(
           (category: { id: string; parent_category_id: string; descriptor: { name: string }; tags: any[] }) => {
-            if (category.parent_category_id !== '') {
-              errorObj[`categories[${category.id}].parent_category_id`] =
-                `/message/catalog/bpp/providers/categories/parent_category_id should be an empty string in category '${category.descriptor.name}'`
-            }
             if (category.parent_category_id === category.id) {
               errorObj[`categories[${category.id}].prnt_ctgry_id`] =
                 `/message/catalog/bpp/providers/categories/parent_category_id should not be the same as id in category '${category.descriptor.name}'`
@@ -592,22 +588,25 @@ export const checkOnsearchFullCatalogRefresh = (data: any) => {
 
           if ('category_ids' in item) {
             item[`category_ids`].map((category: string, index: number) => {
-              const categoryId = category.split(':')[0]
-              const seq = category.split(':')[1]
-
-              if (seqSet.has(seq)) {
-                const key = `prvdr${i}item${j}ctgryseq${index}`
-                errorObj[key] = `duplicate seq : ${seq} in category_ids in prvdr${i}item${j}`
-              } else {
-                seqSet.add(seq)
-              }
-
-              if (!categoriesId.has(categoryId)) {
-                const key = `prvdr${i}item${j}ctgryId${index}`
-                errorObj[key] = `item${j} should have category_ids one of the Catalog/categories/id`
-              }
-            })
-          }
+               const categoryId = category.split(':')[0];
+               const seq = category.split(':')[1];
+           
+               // Check if seq exists in category_ids
+               const seqExists = item[`category_ids`].some((cat: any) => cat.seq === seq);
+           
+               if (seqExists) {
+                 const key = `prvdr${i}item${j}ctgryseq${index}`;
+                 errorObj[key] = `duplicate seq : ${seq} in category_ids in prvdr${i}item${j}`;
+               } else {
+                 seqSet.add(seq);
+               }
+           
+               if (!categoriesId.has(categoryId)) {
+                 const key = `prvdr${i}item${j}ctgryId${index}`;
+                 errorObj[key] = `item${j} should have category_ids one of the Catalog/categories/id`;
+               }
+            });
+           }
 
           try {
             logger.info(`Checking selling price and maximum price for item id: ${item.id}`)

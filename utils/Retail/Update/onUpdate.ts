@@ -16,6 +16,11 @@ import {
   return_rejected_request_reasonCodes,
   return_request_reasonCodes,
 } from '../../../constants/reasonCode'
+import {
+  partcancel_return_reasonCodes,
+  return_rejected_request_reasonCodes,
+  return_request_reasonCodes,
+} from '../../../constants/reasonCode'
 
 export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementDetatilSet: any, flow: any) => {
   const onupdtObj: any = {}
@@ -176,6 +181,7 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
       const settlement_details: any = on_update.payment['@ondc/org/settlement_details']
       settlement_details.map((data: any) => {
         if (data.settlement_type == 'upi' && data.settlement_counterparty == 'seller-app') {
+        if (data.settlement_type == 'upi' && data.settlement_counterparty == 'seller-app') {
           if (!data.upi_address) {
             onupdtObj[`message/order.payment`] =
               `UPI_address is missing in /message/order/payment/@ondc/org/settlement_details`
@@ -269,26 +275,35 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
         logger.info(`Reason_id mapping for cancel_request`)
         const fulfillments = on_update.fulfillments
         fulfillments.map((fulfillment: any) => {
-          if (fulfillment.type == 'Return') {
-            const tags = fulfillment.tags
-            tags.map((tag: any) => {
-              if (tag.code == 'return_request') {
-                const lists = tag.list
-                let reason_id = ''
-                lists.map((list: any) => {
-                  if (list.code == 'reason_id') {
-                    reason_id = list.value
-                  }
-                  if (list.code == 'initiated_by' && list.value !== context.bap_id) {
-                    onupdtObj['invalid_initiated_by'] = `initiated_by should be ${context.bap_id}`
-                  }
-                  if (list.code == 'initiated_by' && list.value === context.bap_id && !return_request_reasonCodes.includes(reason_id)) {
-                    onupdtObj['invalid_return_request_reason'] = `reason code allowed are ${return_request_reasonCodes}`
-                  }
-                })
+          if (fulfillment.type !== 'Return') return
+
+          const tags = fulfillment.tags
+          tags.forEach((tag: any) => {
+            if (tag.code !== 'return_request') return
+
+            const lists = tag.list
+            let reason_id = 'not_found'
+
+            lists.forEach((list: any) => {
+              if (list.code === 'reason_id') {
+                reason_id = list.value
+              }
+              if (list.code === 'initiated_by') {
+                if (list.value !== context.bap_id) {
+                  onupdtObj['invalid_initiated_by'] = `initiated_by should be ${context.bap_id}`
+                }
+
+                if (
+                  reason_id !== 'not_found' &&
+                  list.value === context.bap_id &&
+                  !return_request_reasonCodes.includes(reason_id)
+                ) {
+                  console.log('yahaaaaaaa', list.value, context.bap_id, reason_id)
+                  onupdtObj['invalid_return_request_reason'] = `reason code allowed are ${return_request_reasonCodes}`
+                }
               }
             })
-          }
+          })
         })
       } catch (error: any) {
         logger.error(`!!Error while mapping cancellation_reason_id in ${apiSeq}`)
@@ -299,26 +314,34 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
         logger.info(`Reason_id mapping for cancel_request`)
         const fulfillments = on_update.fulfillments
         fulfillments.map((fulfillment: any) => {
-          if (fulfillment.type == 'Return') {
-            const tags = fulfillment.tags
-            tags.map((tag: any) => {
-              if (tag.code == 'return_request') {
-                const lists = tag.list
-                let reason_id = ''
-                lists.map((list: any) => {
-                  if (list.code == 'reason_id') {
-                    reason_id = list.value
-                  }
-                  if (list.code == 'initiated_by' && list.value !== context.bap_id) {
-                    onupdtObj['invalid_initiated_by'] = `initiated_by should be ${context.bap_id}`
-                  }
-                  if (list.code == 'initiated_by' && list.value === context.bap_id && !return_rejected_request_reasonCodes.includes(reason_id)) {
-                    onupdtObj['invalid_return_request_reason'] = `reason code allowed are ${return_rejected_request_reasonCodes}`
-                  }
-                })
+          if (fulfillment.type !== 'Return') return
+
+          const tags = fulfillment.tags
+          tags.forEach((tag: any) => {
+            if (tag.code !== 'return_request') return
+
+            const lists = tag.list
+            let reason_id = ''
+
+            lists.forEach((list: any) => {
+              if (list.code === 'reason_id') {
+                reason_id = list.value
+              }
+              if (list.code === 'initiated_by') {
+                if (list.value !== context.bap_id) {
+                  onupdtObj['invalid_initiated_by'] = `initiated_by should be ${context.bap_id}`
+                }
+                if (
+                  reason_id &&
+                  list.value === context.bap_id &&
+                  !return_rejected_request_reasonCodes.includes(reason_id)
+                ) {
+                  onupdtObj['invalid_return_rejected_request_reasonCodes'] =
+                    `reason code allowed are ${return_rejected_request_reasonCodes}`
+                }
               }
             })
-          }
+          })
         })
       } catch (error: any) {
         logger.error(`!!Error while mapping cancellation_reason_id in ${apiSeq}`)
@@ -422,11 +445,15 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
                     if (list.code == 'initiated_by' && list.value !== context.bpp_id) {
                       onupdtObj['invalid_initiated_by'] = `initiated_by should be ${context.bpp_id}`
                     }
-                    if (list.code == 'initiated_by' && list.value === context.bpp_id && !partcancel_return_reasonCodes.includes(reason_id)) {
-                      onupdtObj['invalid_partcancel_return_request_reason'] = `reason code allowed are ${partcancel_return_reasonCodes}`
+                    if (
+                      list.code == 'initiated_by' &&
+                      list.value === context.bpp_id &&
+                      !partcancel_return_reasonCodes.includes(reason_id)
+                    ) {
+                      onupdtObj['invalid_partcancel_return_request_reason'] =
+                        `reason code allowed are ${partcancel_return_reasonCodes}`
                     }
                   })
-
                 }
               })
             }

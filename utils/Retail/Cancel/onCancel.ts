@@ -587,6 +587,7 @@ export const checkOnCancel = (data: any, msgIdSet: any) => {
         // Comparing rto_start_location and del_end_location
         if (!_.isEmpty(rto_start_location) && !_.isEmpty(del_end_location)) {
           if (!_.isEqual(rto_start_location?.address, del_end_location?.address)) {
+          if (!_.isEqual(rto_start_location?.address, del_end_location?.address)) {
             onCnclObj['RTO.start.location/DeliveryFulfillment.end.location'] = `RTO fulfillment start and Delivery fulfillment end location mismatch in ${constants.ON_CANCEL}`
           }
         } else {
@@ -595,11 +596,13 @@ export const checkOnCancel = (data: any, msgIdSet: any) => {
 
         // Comparing rto_start_location and del_start_location
         if (!_.isEmpty(rto_start_location?.address) && !_.isEmpty(del_start_location?.address) && _.isEqual(rto_start_location?.address, del_start_location?.address)) {
+        if (!_.isEmpty(rto_start_location?.address) && !_.isEmpty(del_start_location?.address) && _.isEqual(rto_start_location?.address, del_start_location?.address)) {
           onCnclObj['RTO.start.location/DeliveryFulfillment.start.location'] = `RTO fulfillment start and Delivery fulfillment start location should not be equal in ${constants.ON_CANCEL}`
         }
 
         // Comparing rto_end_location and del_start_location
         if (!_.isEmpty(rto_end_location) && !_.isEmpty(del_start_location)) {
+          if (!_.isEqual(rto_end_location?.address, del_start_location?.address)) {
           if (!_.isEqual(rto_end_location?.address, del_start_location?.address)) {
             onCnclObj['RTO.end.location/DeliveryFulfillment.start.location'] = `RTO fulfillment end and Delivery fulfillment start location mismatch in ${constants.ON_CANCEL}`
           }
@@ -609,6 +612,7 @@ export const checkOnCancel = (data: any, msgIdSet: any) => {
         }
 
         // Comparing rto_end_location and del_end_location
+        if (!_.isEmpty(rto_end_location?.address) && !_.isEmpty(del_end_location?.address) && _.isEqual(rto_end_location?.address, del_end_location?.address)) {
         if (!_.isEmpty(rto_end_location?.address) && !_.isEmpty(del_end_location?.address) && _.isEqual(rto_end_location?.address, del_end_location?.address)) {
           onCnclObj['RTO.end_location/DeliveryFulfillment_end_location'] = `RTO fulfillment end and Delivery fulfillment end location should not be equal in ${constants.ON_CANCEL}`
         }

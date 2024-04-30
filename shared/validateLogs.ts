@@ -10,6 +10,13 @@ import { checkInit } from '../utils/Retail/Init/init'
 import { checkOnInit } from '../utils/Retail/Init/onInit'
 import { checkConfirm } from '../utils/Retail/Confirm/confirm'
 import { checkOnConfirm } from '../utils/Retail/Confirm/onConfirm'
+import { checkOnsearchFullCatalogRefresh } from '../utils/Retail/RET11_onSearch/onSearch'
+import { checkSelect } from '../utils/Retail/Select/select'
+import { checkOnSelect } from '../utils/Retail/Select/onSelect'
+import { checkInit } from '../utils/Retail/Init/init'
+import { checkOnInit } from '../utils/Retail/Init/onInit'
+import { checkConfirm } from '../utils/Retail/Confirm/confirm'
+import { checkOnConfirm } from '../utils/Retail/Confirm/onConfirm'
 import { checkOnTrack } from '../utils/Retail/Track/onTrack'
 import { checkTrack } from '../utils/Retail/Track/track'
 import { checkOnStatusPending } from '../utils/Retail/Status/onStatusPending'
@@ -29,7 +36,11 @@ import checkLspIssueClose from '../utils/igm/lspIssue(close)'
 import checkIssueClose from '../utils/igm/retIssueClose'
 import { checkSearchIncremental } from '../utils/Retail/SearchInc/searchIncremental'
 import { checkOnsearchIncremental } from '../utils/Retail/SearchInc/onSearchIncremental'
+import { checkSearchIncremental } from '../utils/Retail/SearchInc/searchIncremental'
+import { checkOnsearchIncremental } from '../utils/Retail/SearchInc/onSearchIncremental'
 import { FLOW } from '../utils/enum'
+import { checkSelect_OOS } from '../utils/Retail/Select_OOS/select_oos'
+import { checkOnSelect_OOS } from '../utils/Retail/Select_OOS/on_select_oos'
 import { checkSelect_OOS } from '../utils/Retail/Select_OOS/select_oos'
 import { checkOnSelect_OOS } from '../utils/Retail/Select_OOS/on_select_oos'
 import { checkUpdate } from '../utils/Retail/Update/update'
@@ -179,7 +190,9 @@ export const validateLogs = async (data: any, domain: string, flow: string) => {
         case ApiSequence.ON_SEARCH:
           if (domain === 'ONDC:RET11') {
             return checkOnsearchFullCatalogRefresh(data)
+            return checkOnsearchFullCatalogRefresh(data)
           } else {
+            return checkOnsearch(data)
             return checkOnsearch(data)
           }
         case ApiSequence.INC_SEARCH:
@@ -191,16 +204,19 @@ export const validateLogs = async (data: any, domain: string, flow: string) => {
             return checkSelect_OOS(data, msgIdSet)
           } else {
             return checkSelect(data, msgIdSet, ApiSequence.SELECT)
+            return checkSelect(data, msgIdSet, ApiSequence.SELECT)
           }
         case ApiSequence.ON_SELECT:
           return checkOnSelect(data)
         case ApiSequence.SELECT_OUT_OF_STOCK:
+          return checkSelect(data, msgIdSet, ApiSequence.SELECT_OUT_OF_STOCK)
           return checkSelect(data, msgIdSet, ApiSequence.SELECT_OUT_OF_STOCK)
         case ApiSequence.ON_SELECT_OUT_OF_STOCK:
           return checkOnSelect_OOS(data)
         case ApiSequence.INIT:
           return checkInit(data, msgIdSet)
         case ApiSequence.ON_INIT:
+          return checkOnInit(data)
           return checkOnInit(data)
         case ApiSequence.CONFIRM:
           return checkConfirm(data, msgIdSet)

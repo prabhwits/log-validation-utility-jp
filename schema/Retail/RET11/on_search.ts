@@ -44,7 +44,7 @@ export const FnBonSearchSchema = {
           type: 'string',
         },
         timestamp: {
-          format: 'rfc3339-date-time'
+          format: 'rfc3339-date-time',
         },
         ttl: {
           type: 'string',
@@ -354,7 +354,7 @@ export const FnBonSearchSchema = {
                               required: ['start', 'end'],
                             },
                           },
-                          required: ['label', 'timestamp', 'days'],
+                          required: ['label', 'timestamp', 'days', 'schedule'],
                         },
                         gps: {
                           type: 'string',
@@ -550,8 +550,8 @@ export const FnBonSearchSchema = {
                               properties: {
                                 count: {
                                   type: 'string',
-                                  pattern: '^[0-9]+$',
-                                  errorMessage: 'available count must be numbers only',
+                                  enum: ['99', '0'],
+                                  errorMessage: 'available count must be either 99 or 0 only',
                                 },
                               },
                               required: ['count'],
@@ -584,7 +584,7 @@ export const FnBonSearchSchema = {
                             },
                             maximum_value: {
                               type: 'string',
-                              pattern: '^[0-9]+(.[0-9]{1,2})?$',
+                              pattern: '^[0-9]+(\.[0-9]{1,2})?$',
                               errorMessage: 'Price value should be a number in string with upto 2 decimal places',
                             },
                             tags: {
@@ -652,6 +652,7 @@ export const FnBonSearchSchema = {
                         },
                         '@ondc/org/return_window': {
                           type: 'string',
+                          format: 'duration',
                         },
                         '@ondc/org/seller_pickup_return': {
                           type: 'boolean',
@@ -695,7 +696,21 @@ export const FnBonSearchSchema = {
                           },
                         },
                       },
-                      required: ['id', 'descriptor', 'quantity', 'price', 'category_id', 'tags'],
+                      required: [
+                        'id',
+                        'descriptor',
+                        'quantity',
+                        'price',
+                        'category_id',
+                        'tags',
+                        '@ondc/org/returnable',
+                        '@ondc/org/cancellable',
+                        '@ondc/org/return_window',
+                        '@ondc/org/seller_pickup_return',
+                        '@ondc/org/time_to_ship',
+                        '@ondc/org/available_on_cod',
+                        '@ondc/org/contact_details_consumer_care',
+                      ],
                     },
                   },
                   offers: {
@@ -817,7 +832,7 @@ export const FnBonSearchSchema = {
                                         properties: {
                                           value: {
                                             type: 'string',
-                                            enum: ['Self-Pickup', 'Order', 'Delivery'],
+                                            enum: ['Self-Pickup', 'Order', 'Delivery', 'All'],
                                             errorMessage:
                                               "timing for fulfillment type, enum - 'Order' (online order processing timings 'Delivery' (order shipment timings, will be same as delivery timings for hyperlocal), 'Self-Pickup' (self-pickup timings)",
                                           },

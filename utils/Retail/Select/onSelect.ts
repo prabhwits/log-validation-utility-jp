@@ -46,6 +46,15 @@ export const checkOnSelect = (data: any) => {
     logger.error(`!!Error while checking message id for /${constants.ON_SELECT}, ${error.stack}`)
   }
 
+  try {
+    logger.info(`Comparing Message Ids of /${constants.SELECT} and /${constants.ON_SELECT}`)
+    if (!_.isEqual(getValue(`${ApiSequence.SELECT}_msgId`), context.message_id)) {
+      errorObj[`${ApiSequence.ON_SELECT}_msgId`]  = `Message Ids for /${constants.SELECT} and /${constants.ON_SELECT} api should be same`
+    }
+  } catch (error: any) {
+    logger.error(`!!Error while checking message id for /${constants.ON_SELECT}, ${error.stack}`)
+  }
+
   if (!_.isEqual(data.context.domain.split(':')[1], getValue(`domain`))) {
     errorObj[`Domain[${data.context.action}]`] = `Domain should be same in each action`
   }
@@ -138,8 +147,11 @@ export const checkOnSelect = (data: any) => {
     logger.info(`Comparing Message Ids of /${constants.SELECT} and /${constants.ON_SELECT}`)
     if (!_.isEqual(getValue(`${ApiSequence.SELECT}_msgId`), context.message_id)) {
       errorObj[`${ApiSequence.ON_SELECT}_msgId`] = `Message Ids for /${constants.SELECT} and /${constants.ON_SELECT} api should be same`
+    if (!_.isEqual(getValue(`${ApiSequence.SELECT}_msgId`), context.message_id)) {
+      errorObj[`${ApiSequence.ON_SELECT}_msgId`]  = `Message Ids for /${constants.SELECT} and /${constants.ON_SELECT} api should be same`
     }
   } catch (error: any) {
+    logger.error(`!!Error while checking message id for /${constants.ON_SELECT}, ${error.stack}`)
     logger.error(`!!Error while checking message id for /${constants.ON_SELECT}, ${error.stack}`)
   }
 
