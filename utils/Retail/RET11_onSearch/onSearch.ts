@@ -119,7 +119,7 @@ export const checkOnsearchFullCatalogRefresh = (data: any) => {
     logger.info(`Saving static fulfillment ids in /${constants.ON_SEARCH}`)
 
     let i = 0
-    const bppFF = onSearchCatalog['bpp/fulfillments']
+    const bppFF = onSearchCatalog['bpp/providers'][0].fulfillments
     const len = bppFF.length
 
     while (i < len) {
