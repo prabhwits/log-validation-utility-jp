@@ -313,7 +313,7 @@ export const checkOnsearchFullCatalogRefresh = (data: any) => {
                   if (item.code === 'type') {
                     if ((category.parent_category_id == "" || category.parent_category_id) && item.value == 'custom_group') {
                       if (category.parent_category_id) {
-                        errorObj[`categories[${category.id}].tags[${index}].list[${item.code}]`] = `parent_category_id should not value any value while type is ${item.value}`
+                        errorObj[`categories[${category.id}].tags[${index}].list[${item.code}]`] = `parent_category_id should not have any value while type is ${item.value}`
                       }
                       errorObj[`categories[${category.id}].tags[${index}].list[${item.code}]`] = `parent_category_id should not be present while type is ${item.value}`
                     }
@@ -646,7 +646,6 @@ export const checkOnsearchFullCatalogRefresh = (data: any) => {
 
           try {
             logger.info(`Checking fulfillment_id for item id: ${item.id}`)
-
             if (item.fulfillment_id && !onSearchFFIdsArray[i].has(item.fulfillment_id)) {
               const key = `prvdr${i}item${j}ff`
               errorObj[key] =
