@@ -1007,6 +1007,7 @@ export const checkOnsearchFullCatalogRefresh = (data: any) => {
 
         //checking for each serviceability construct and matching serviceability constructs with the previous ones
         const serviceabilitySet = new Set()
+        const timingSet = new Set()
         tags.forEach((sc: any, t: any) => {
           if (sc.code === 'serviceability') {
             if (serviceabilitySet.has(JSON.stringify(sc))) {
@@ -1192,6 +1193,13 @@ export const checkOnsearchFullCatalogRefresh = (data: any) => {
             }
           }
           if (sc.code === 'timing') {
+            if (timingSet.has(JSON.stringify(sc))) {
+              const key = `prvdr${i}tags${t}`
+              errorObj[key] =
+                `timing construct /bpp/providers[${i}]/tags[${t}] should not be same with the previous timing constructs`
+            }
+
+            timingSet.add(JSON.stringify(sc))
             const fulfillments = prvdr['fulfillments']
             const fulfillmentTypes = fulfillments.map((fulfillment: any) => fulfillment.type)
 
@@ -1218,9 +1226,14 @@ export const checkOnsearchFullCatalogRefresh = (data: any) => {
           }
         })
         if (isEmpty(serviceabilitySet)) {
-          const key = `prvdr${i}tags`
+          const key = `prvdr${i}tags/serviceability`
           errorObj[key] =
             `serviceability construct is mandatory in /bpp/providers[${i}]/tags`
+        }
+        if (isEmpty(timingSet)) {
+          const key = `prvdr${i}tags/timing`
+          errorObj[key] =
+            `timing construct is mandatory in /bpp/providers[${i}]/tags`
         }
       } catch (error: any) {
         logger.error(

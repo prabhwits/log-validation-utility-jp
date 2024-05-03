@@ -1148,6 +1148,7 @@ export const checkOnsearch = (data: any) => {
 
         //checking for each serviceability construct and matching serviceability constructs with the previous ones
         const serviceabilitySet = new Set()
+        const timingSet = new Set()
         tags.forEach((sc: any, t: any) => {
           if (sc.code === 'serviceability') {
             if (serviceabilitySet.has(JSON.stringify(sc))) {
@@ -1332,11 +1333,48 @@ export const checkOnsearch = (data: any) => {
               }
             }
           }
+          if (sc.code === 'timing') {
+            if (timingSet.has(JSON.stringify(sc))) {
+              const key = `prvdr${i}tags${t}`
+              errorObj[key] =
+                `timing construct /bpp/providers[${i}]/tags[${t}] should not be same with the previous timing constructs`
+            }
+
+            timingSet.add(JSON.stringify(sc))
+            const fulfillments = prvdr['fulfillments']
+            const fulfillmentTypes = fulfillments.map((fulfillment: any) => fulfillment.type)
+
+            let isOrderPresent = false
+            const typeCode = sc?.list.find((item: any) => item.code === 'type')
+            if (typeCode) {
+              const timingType = typeCode.value
+              if (
+                timingType === 'Order' ||
+                timingType === 'Delivery' ||
+                timingType === 'Self-Pickup' ||
+                timingType === 'All'
+              ) {
+                isOrderPresent = true
+              } else if (!fulfillmentTypes.includes(timingType)) {
+                errorObj[`provider[${i}].timing`] =
+                  `The type '${timingType}' in timing tags should match with types in fulfillments array, along with 'Order'`
+              }
+            }
+
+            if (!isOrderPresent) {
+              errorObj[`provider[${i}].tags.timing`] = `'Order' type must be present in timing tags`
+            }
+          }
         })
         if (isEmpty(serviceabilitySet)) {
-          const key = `prvdr${i}tags`
+          const key = `prvdr${i}tags/serviceability`
           errorObj[key] =
             `serviceability construct is mandatory in /bpp/providers[${i}]/tags`
+        }
+        if (isEmpty(timingSet)) {
+          const key = `prvdr${i}tags/timing`
+          errorObj[key] =
+            `timing construct is mandatory in /bpp/providers[${i}]/tags`
         }
       } catch (error: any) {
         logger.error(`!!Error while checking serviceability construct for bpp/providers[${i}], ${error.stack}`)
