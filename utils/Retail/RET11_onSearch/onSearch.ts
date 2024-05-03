@@ -20,7 +20,7 @@ import {
   checkForDuplicates,
   validateObjectString,
 } from '../..'
-import _ from 'lodash'
+import _, { isEmpty } from 'lodash'
 
 export const checkOnsearchFullCatalogRefresh = (data: any) => {
   if (!data || isObjectEmpty(data)) {
@@ -1005,9 +1005,17 @@ export const checkOnsearchFullCatalogRefresh = (data: any) => {
           }
         }
 
-        //checking for each serviceability construct
+        //checking for each serviceability construct and matching serviceability constructs with the previous ones
+        const serviceabilitySet = new Set()
         tags.forEach((sc: any, t: any) => {
           if (sc.code === 'serviceability') {
+            if (serviceabilitySet.has(JSON.stringify(sc))) {
+              const key = `prvdr${i}tags${t}`
+              errorObj[key] =
+                `serviceability construct /bpp/providers[${i}]/tags[${t}] should not be same with the previous serviceability constructs`
+            }
+
+            serviceabilitySet.add(JSON.stringify(sc))
             if ('list' in sc) {
               if (sc.list.length != 5) {
                 const key = `prvdr${i}tags${t}`
@@ -1209,6 +1217,11 @@ export const checkOnsearchFullCatalogRefresh = (data: any) => {
             }
           }
         })
+        if (isEmpty(serviceabilitySet)) {
+          const key = `prvdr${i}tags`
+          errorObj[key] =
+            `serviceability construct is mandatory in /bpp/providers[${i}]/tags`
+        }
       } catch (error: any) {
         logger.error(
           `!!Error while checking serviceability and timing construct for bpp/providers[${i}], ${error.stack}`,

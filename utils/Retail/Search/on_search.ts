@@ -21,7 +21,7 @@ import {
   findValueAtPath,
   checkForDuplicates,
 } from '../../../utils'
-import _ from 'lodash'
+import _, { isEmpty } from 'lodash'
 import { compareSTDwithArea } from '../../index'
 import { BPCJSON, groceryJSON, healthJSON, homeJSON } from '../../../constants/category'
 import { electronicsData } from '../../../constants/electronics'
@@ -1137,7 +1137,6 @@ export const checkOnsearch = (data: any) => {
       // servicability Construct
       try {
         logger.info(`Checking serviceability construct for bpp/providers[${i}]`)
-
         const tags = onSearchCatalog['bpp/providers'][i]['tags']
         if (tags) {
           const circleRequired = checkServiceabilityType(tags)
@@ -1147,9 +1146,17 @@ export const checkOnsearch = (data: any) => {
           }
         }
 
-        //checkinjg for each serviceability construct
+        //checking for each serviceability construct and matching serviceability constructs with the previous ones
+        const serviceabilitySet = new Set()
         tags.forEach((sc: any, t: any) => {
           if (sc.code === 'serviceability') {
+            if (serviceabilitySet.has(JSON.stringify(sc))) {
+              const key = `prvdr${i}tags${t}`
+              errorObj[key] =
+                `serviceability construct /bpp/providers[${i}]/tags[${t}] should not be same with the previous serviceability constructs`
+            }
+
+            serviceabilitySet.add(JSON.stringify(sc))
             if ('list' in sc) {
               if (sc.list.length != 5) {
                 const key = `prvdr${i}tags${t}`
@@ -1326,6 +1333,11 @@ export const checkOnsearch = (data: any) => {
             }
           }
         })
+        if (isEmpty(serviceabilitySet)) {
+          const key = `prvdr${i}tags`
+          errorObj[key] =
+            `serviceability construct is mandatory in /bpp/providers[${i}]/tags`
+        }
       } catch (error: any) {
         logger.error(`!!Error while checking serviceability construct for bpp/providers[${i}], ${error.stack}`)
       }
