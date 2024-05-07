@@ -12,7 +12,7 @@ export const checkOnStatusOutForDelivery = (data: any, state: string, msgIdSet: 
     if (!data || isObjectEmpty(data)) {
       return { [ApiSequence.ON_STATUS_OUT_FOR_DELIVERY]: 'JSON cannot be empty' }
     }
-
+    const flow = getValue('flow')
     const { message, context }: any = data
     if (!message || !context || isObjectEmpty(message)) {
       return { missingFields: '/context, /message, is missing or empty' }
@@ -106,6 +106,56 @@ export const checkOnStatusOutForDelivery = (data: any, state: string, msgIdSet: 
         `!!Error while comparing order id in /${constants.ON_STATUS}_${state} and /${constants.CONFIRM}`,
         error,
       )
+    }
+
+    if (flow == '6') {
+      try {
+        // For Delivery Object
+        const DELobj = _.filter(on_status.fulfillments, { type: 'Delivery' })
+        if (!DELobj.length) {
+          logger.error(`Delivery object is mandatory for ${ApiSequence.ON_STATUS_OUT_FOR_DELIVERY}`)
+          const key = `missingDelivery`
+          onStatusObj[key] = `Delivery object is mandatory for ${ApiSequence.ON_STATUS_OUT_FOR_DELIVERY}`
+        } else {
+          const deliveryObj = DELobj[0]
+          if (!deliveryObj.tags) {
+            const key = `missingTags`
+            onStatusObj[key] = `Tags are mandatory in Delivery Object for ${ApiSequence.ON_STATUS_OUT_FOR_DELIVERY}`
+          }
+          else {
+            const tags = deliveryObj.tags
+            const routingTagArr = _.filter(tags, { code: 'routing' })
+            if (!routingTagArr.length) {
+              const key = `missingRouting/Tag`
+              onStatusObj[key] = `RoutingTag object is mandatory in Tags of Delivery Object for ${ApiSequence.ON_STATUS_OUT_FOR_DELIVERY}`
+            }
+            else {
+              const routingTag = routingTagArr[0]
+              const routingTagList = routingTag.list
+              if (!routingTagList) {
+                const key = `missingRouting/Tag/List`
+                onStatusObj[key] = `RoutingTagList is mandatory in RoutingTag of Delivery Object for ${ApiSequence.ON_STATUS_OUT_FOR_DELIVERY}`
+              }
+              else {
+                const routingTagTypeArr = _.filter(routingTagList, { code: 'type' })
+                if (!routingTagTypeArr.length) {
+                  const key = `missingRouting/Tag/List/Type`
+                  onStatusObj[key] = `RoutingTagListType object is mandatory in RoutingTag/List of Delivery Object for ${ApiSequence.ON_STATUS_OUT_FOR_DELIVERY}`
+                }
+                else {
+                  const routingTagType = routingTagTypeArr[0]
+                  if (!['P2P', 'P2H2P'].includes(routingTagType.value)) {
+                    const key = `missingRouting/Tag/List/Type/Value`;
+                    onStatusObj[key] = `RoutingTagListType Value is mandatory in RoutingTag of Delivery Object for ${ApiSequence.ON_STATUS_OUT_FOR_DELIVERY} and should be equal to 'P2P' or 'P2H2P'`;
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch (error: any) {
+        logger.error(`Error while checking Fulfillments Delivery Obj in /${ApiSequence.ON_STATUS_OUT_FOR_DELIVERY}, ${error.stack}`)
+      }
     }
 
     try {
