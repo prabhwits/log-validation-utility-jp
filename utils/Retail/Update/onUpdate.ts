@@ -16,7 +16,7 @@ import {
   return_rejected_request_reasonCodes,
   return_request_reasonCodes,
 } from '../../../constants/reasonCode'
-export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementDetatilSet: any, quoteTrailItemsSet: any, flow: any) => {
+export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementDetatilSet: any, fulfillmentsItemsSet: any, flow: any) => {
   const onupdtObj: any = {}
   const quoteItemSet: any = new Set()
   try {
@@ -296,40 +296,30 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
         )
       }
 
-      // Checking for quoteTrailItems and adding to quoteTrailItemsSet and comparing with the previous calls
+      // Checking for fulfillmentsItems and adding to fulfillmentsItemsSet
       try {
-        let cancelFulfillmentsArray = _.filter(on_update.fulfillments, { type: 'Cancel' })
-        if (cancelFulfillmentsArray.length != 0) {
-          const cancelFulfillments = cancelFulfillmentsArray[0]
-          const quoteTrailItems = cancelFulfillments.tags.filter(
-            (tag: any) => tag.code == 'quote_trail')
-          if (quoteTrailItems.length != 0) {
-            if (apiSeq == ApiSequence.ON_UPDATE_INTERIM_REVERSE_QC) {
-              quoteTrailItems.forEach((item: any) => {
-                quoteTrailItemsSet.add(item)
-              });
-            }
-
-            quoteTrailItemsSet.forEach((obj1: any) => {
-              const exist = quoteTrailItems.some((obj2: any) => {
-                return _.isEqual(obj1, obj2)
-              });
-              if (!exist) {
-                onupdtObj[`message/order.fulfillments/Cancel/tags/quote_trail`] = "Missing fulfillments/Cancel/tags/quote_trail as compare to the previous calls"
-              }
+        let fulfillmentsArray = on_update.fulfillments
+        if (fulfillmentsArray.length != 0) {
+          if (apiSeq == ApiSequence.ON_UPDATE_INTERIM_REVERSE_QC) {
+            fulfillmentsArray.forEach((ff: any) => {
+              fulfillmentsItemsSet.add((ff))
+            })
+          }
+          fulfillmentsItemsSet.forEach((obj1: any) => {
+            const exist = fulfillmentsArray.some((obj2: any) => {
+              return _.isEqual(obj1, obj2)
             });
-
-          }
-          else {
-            onupdtObj[`message/order.fulfillments/Cancel/tags/quote_trail`] = `Fulfillments/Cancel/tags/quote_trail is missing in ${apiSeq}`
-          }
+            if (!exist) {
+              onupdtObj[`message/order.fulfillments/`] = "Missing fulfillments as compare to the previous calls"
+            }
+          });
         }
         else {
-          onupdtObj[`message/order.fulfillments/Cancel`] = `Fulfillments/Cancel is missing in ${apiSeq}`
+          onupdtObj[`message/order.fulfillments`] = `Fulfillments are missing in ${apiSeq}`
         }
       } catch (error: any) {
         logger.error(
-          `Error occurred while checking for quote_trail in /${apiSeq}`,
+          `Error occurred while checking for fulfillments in /${apiSeq}`,
         )
       }
 
@@ -428,40 +418,30 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
         )
       }
 
-      // Checking for quoteTrailItems and adding to quoteTrailItemsSet and comparing with the previous calls
+      // Checking for fulfillmentsItems and adding to fulfillmentsItemsSet
       try {
-        let cancelFulfillmentsArray = _.filter(on_update.fulfillments, { type: 'Cancel' })
-        if (cancelFulfillmentsArray.length != 0) {
-          const cancelFulfillments = cancelFulfillmentsArray[0]
-          const quoteTrailItems = cancelFulfillments.tags.filter(
-            (tag: any) => tag.code == 'quote_trail')
-          if (quoteTrailItems.length != 0) {
-            if (apiSeq == ApiSequence.ON_UPDATE_LIQUIDATED) {
-              quoteTrailItems.forEach((item: any) => {
-                quoteTrailItemsSet.add(item)
-              });
-            }
-
-            quoteTrailItemsSet.forEach((obj1: any) => {
-              const exist = quoteTrailItems.some((obj2: any) => {
-                return _.isEqual(obj1, obj2)
-              });
-              if (!exist) {
-                onupdtObj[`message/order.fulfillments/Cancel/tags/quote_trail`] = "Missing fulfillments/Cancel/tags/quote_trail as compare to the previous calls"
-              }
+        let fulfillmentsArray = on_update.fulfillments
+        if (fulfillmentsArray.length != 0) {
+          if (apiSeq == ApiSequence.ON_UPDATE_LIQUIDATED) {
+            fulfillmentsArray.forEach((ff: any) => {
+              fulfillmentsItemsSet.add((ff))
+            })
+          }
+          fulfillmentsItemsSet.forEach((obj1: any) => {
+            const exist = fulfillmentsArray.some((obj2: any) => {
+              return _.isEqual(obj1, obj2)
             });
-          }
-          else {
-            onupdtObj[`message/order.fulfillments/Cancel/tags/quote_trail`] = `Fulfillments/Cancel/tags/quote_trail is missing in ${apiSeq}`
-          }
+            if (!exist) {
+              onupdtObj[`message/order.fulfillments/`] = "Missing fulfillments as compare to the previous calls"
+            }
+          });
         }
         else {
-          onupdtObj[`message/order.fulfillments/Cancel`] = `Fulfillments/Cancel is missing in ${apiSeq}`
+          onupdtObj[`message/order.fulfillments`] = `Fulfillments are missing in ${apiSeq}`
         }
-
       } catch (error: any) {
         logger.error(
-          `Error occurred while checking for quote_trail in /${apiSeq}`,
+          `Error occurred while checking for fulfillments in /${apiSeq}`,
         )
       }
     }
@@ -472,7 +452,7 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
       fulfillments.map((fulfillment: any, iF: number) => {
         if (fulfillment.tags) {
           const tags = fulfillment.tags
-          tags.map((tag: any, iT:any) => {
+          tags.map((tag: any, iT: any) => {
             if (tag.code === 'cancel_request') {
               const list = tag.list
               const tags_initiated = list.find((data: any) => data.code === 'initiated_by')
@@ -527,28 +507,20 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
           )
         }
 
-        // Checking for quoteTrailItems and adding to quoteTrailItemsSet
+        // Checking for fulfillmentsItems and adding to fulfillmentsItemsSet
         try {
-          let cancelFulfillmentsArray = _.filter(on_update.fulfillments, { type: 'Cancel' })
-          if (cancelFulfillmentsArray.length != 0) {
-            const cancelFulfillments = cancelFulfillmentsArray[0]
-            const quoteTrailItems = cancelFulfillments.tags.filter(
-              (tag: any) => tag.code == 'quote_trail')
-            if (quoteTrailItems.length != 0) {
-              quoteTrailItems.forEach((item: any) => {
-                quoteTrailItemsSet.add(item)
-              });
-            }
-            else {
-              onupdtObj[`message/order.fulfillments/Cancel/tags/quote_trail`] = `Fulfillments/Cancel/tags/quote_trail is missing in ${apiSeq}`
-            }
+          let fulfillmentsArray = on_update.fulfillments
+          if (fulfillmentsArray.length != 0) {
+            fulfillmentsArray.forEach((ff: any) => {
+              fulfillmentsItemsSet.add((ff))
+            })
           }
           else {
-            onupdtObj[`message/order.fulfillments/Cancel`] = `Fulfillments/Cancel is missing in ${apiSeq}`
+            onupdtObj[`message/order.fulfillments`] = `Fulfillments are missing in ${apiSeq}`
           }
         } catch (error: any) {
           logger.error(
-            `Error occurred while checking for quote_trail in /${apiSeq}`,
+            `Error occurred while checking for fulfillments in /${apiSeq}`,
           )
         }
 
