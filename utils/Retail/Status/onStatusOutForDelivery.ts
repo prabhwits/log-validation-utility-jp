@@ -6,7 +6,7 @@ import { validateSchema, isObjectEmpty, checkContext, areTimestampsLessThanOrEqu
 import { getValue, setValue } from '../../../shared/dao'
 
 
-export const checkOnStatusOutForDelivery = (data: any, state: string, msgIdSet: any) => {
+export const checkOnStatusOutForDelivery = (data: any, state: string, msgIdSet: any, fulfillmentsItemsSet: any) => {
   const onStatusObj: any = {}
   try {
     if (!data || isObjectEmpty(data)) {
@@ -314,6 +314,43 @@ export const checkOnStatusOutForDelivery = (data: any, state: string, msgIdSet: 
       logger.info(
         `Error while checking out for delivery timestamp in /${constants.ON_STATUS}_${state}.json Error: ${error.stack}`,
       )
+    }
+
+    if (flow == '6') {
+      try {
+        // For Delivery Object
+        const fulfillments = on_status.fulfillments
+        if (!fulfillments.length) {
+          const key = `missingFulfillments`
+          onStatusObj[key] = `missingFulfillments is mandatory for ${ApiSequence.ON_STATUS_PACKED}`
+        }
+        else {
+          fulfillments.forEach((ff: any, i: number) => {
+            if (ff.type == "Delivery" && !_.isEqual(ff?.start?.time?.timestamp, getValue("deliveryTmpStmp"))) {
+              onStatusObj[`message/order.fulfillments/${i}`] = `Mismatch occur while comparing ${ff.type} fulfillment start timestamp with the ${ApiSequence.ON_STATUS_PICKED}`
+            }
+          });
+          let i: number = 0
+          fulfillmentsItemsSet.forEach((obj1: any) => {
+            const exist = fulfillments.some((obj2: any) => {
+              if (obj2.type == "Delivery") {
+                delete obj2?.tags
+                delete obj2?.instructions
+                delete obj2?.start?.time?.timestamp
+              }
+              delete obj2?.state
+              return _.isEqual(obj1, obj2)
+            });
+            if (!exist) {
+              onStatusObj[`message/order.fulfillments/${i}`] = `Mismatch occur while comparing '${obj1.type}' fulfillment (without state, tags, instructions)  with the previous calls`
+            }
+            ++i
+          });
+        }
+
+      } catch (error: any) {
+        logger.error(`Error while checking Fulfillments Delivery Obj in /${ApiSequence.ON_STATUS_PACKED}, ${error.stack}`)
+      }
     }
 
     return onStatusObj

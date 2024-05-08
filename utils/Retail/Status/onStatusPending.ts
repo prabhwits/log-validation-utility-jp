@@ -5,13 +5,13 @@ import { logger } from '../../../shared/logger'
 import { validateSchema, isObjectEmpty, checkContext, areTimestampsLessThanOrEqualTo, payment_status } from '../..'
 import { getValue, setValue } from '../../../shared/dao'
 
-export const checkOnStatusPending = (data: any, state: string, msgIdSet: any) => {
+export const checkOnStatusPending = (data: any, state: string, msgIdSet: any, fulfillmentsItemsSet: any) => {
   const onStatusObj: any = {}
   try {
     if (!data || isObjectEmpty(data)) {
       return { [ApiSequence.ON_STATUS_PENDING]: 'JSON cannot be empty' }
     }
-
+    const flow = getValue('flow')
     const { message, context }: any = data
     if (!message || !context || isObjectEmpty(message)) {
       return { missingFields: '/context, /message, is missing or empty' }
@@ -170,6 +170,49 @@ export const checkOnStatusPending = (data: any, state: string, msgIdSet: any) =>
       }
     } catch (err: any) {
       logger.error(`Error while checking transaction is in message.order.payment`)
+    }
+
+    if (flow == '6') {
+      try {
+        // For Delivery Object
+        const fulfillments = on_status.fulfillments
+        if (!fulfillments.length) {
+          const key = `missingFulfillments`
+          onStatusObj[key] = `missingFulfillments is mandatory for ${ApiSequence.ON_STATUS_PENDING}`
+        }
+        else {
+          const deliveryObjArr = _.filter(fulfillments, { type: "Delivery" })
+          if (!deliveryObjArr.length) {
+            onStatusObj[`message/order.fulfillments/`] = `Delivery fullfillment must be present in ${ApiSequence.ON_STATUS_PENDING}`
+          }
+          else {
+            const deliverObj = deliveryObjArr[0]
+            delete deliverObj?.state
+            delete deliverObj?.tags
+            delete deliverObj?.instructions
+            fulfillmentsItemsSet.add(deliverObj)
+          }
+          let i: number = 0
+          fulfillmentsItemsSet.forEach((obj1: any) => {
+            const exist = fulfillments.some((obj2: any) => {
+              if (obj2.type == "Delivery") {
+                delete obj2?.tags
+                delete obj2?.instructions
+              }
+              delete obj2?.state
+              return _.isEqual(obj1, obj2)
+            });
+            if (!exist) {
+              onStatusObj[`message/order.fulfillments/${i}`] = `Mismatch occur while comparing '${obj1.type}' fulfillment (without state, tags, instructions)  with the previous calls`
+            }
+            i++
+          });
+
+        }
+
+      } catch (error: any) {
+        logger.error(`Error while checking Fulfillments Delivery Obj in /${ApiSequence.ON_STATUS_PENDING}, ${error.stack}`)
+      }
     }
 
     return onStatusObj
