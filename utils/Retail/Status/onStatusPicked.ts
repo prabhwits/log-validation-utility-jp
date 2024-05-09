@@ -6,13 +6,11 @@ import { validateSchema, isObjectEmpty, checkContext, areTimestampsLessThanOrEqu
 import { getValue, setValue } from '../../../shared/dao'
 
 export const checkOnStatusPicked = (data: any, state: string, msgIdSet: any, fulfillmentsItemsSet: any) => {
-export const checkOnStatusPicked = (data: any, state: string, msgIdSet: any, fulfillmentsItemsSet: any) => {
   const onStatusObj: any = {}
   try {
     if (!data || isObjectEmpty(data)) {
       return { [ApiSequence.ON_STATUS_PICKED]: 'JSON cannot be empty' }
     }
-    const flow = getValue('flow')
     const flow = getValue('flow')
     const { message, context }: any = data
     if (!message || !context || isObjectEmpty(message)) {
@@ -335,9 +333,9 @@ export const checkOnStatusPicked = (data: any, state: string, msgIdSet: any, ful
                 delete obj2?.instructions
                 delete obj2?.start?.time?.timestamp
                 delete obj2?.tags
+                delete obj2?.state
               }
 
-              delete obj2?.state
               return _.isEqual(obj1, obj2)
             });
             if (!exist) {

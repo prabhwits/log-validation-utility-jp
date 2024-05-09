@@ -220,8 +220,8 @@ export const checkOnStatusPacked = (data: any, state: string, msgIdSet: any, ful
               if (obj2.type == "Delivery") {
                 delete obj2?.instructions
                 delete obj2?.tags
+                delete obj2?.state
               }
-              delete obj2?.state
               return _.isEqual(obj1, obj2)
             });
             if (!exist) {
