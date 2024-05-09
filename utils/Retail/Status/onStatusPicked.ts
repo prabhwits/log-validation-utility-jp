@@ -355,50 +355,6 @@ export const checkOnStatusPicked = (data: any, state: string, msgIdSet: any, ful
       }
     }
 
-    if (flow === '6') {
-      try {
-        // For Delivery Object
-        const fulfillments = on_status.fulfillments
-        if (!fulfillments.length) {
-          const key = `missingFulfillments`
-          onStatusObj[key] = `missingFulfillments is mandatory for ${ApiSequence.ON_STATUS_PICKED}`
-        }
-        else {
-          fulfillments.forEach((ff: any) => {
-            if (ff.type == "Delivery") {
-              setValue("deliveryTmpStmp", ff?.start?.time?.timestamp)
-            }
-          });
-          let i: number = 0
-          fulfillmentsItemsSet.forEach((obj1: any) => {
-            const exist = fulfillments.some((obj2: any) => {
-
-              if (obj2.type == "Delivery") {
-                delete obj2?.instructions
-                delete obj2?.start?.time?.timestamp
-                delete obj2?.tags
-              }
-
-              delete obj2?.state
-              return _.isEqual(obj1, obj2)
-            });
-            if (!exist) {
-              if(obj1.type==='Delivery'){
-              onStatusObj[`message/order.fulfillments/${i}`] = `Mismatch occured while comparing '${obj1.type}' fulfillment object(without state, tags, instructions) with ${ApiSequence.ON_STATUS_PENDING}`
-              }
-              if(obj1.type==='Cancel'){
-                onStatusObj[`message/order.fulfillments/${i}`] = `Mismatch occured while comparing '${obj1.type}' fulfillment object(without state, tags, instructions) with ${ApiSequence.ON_UPDATE_PART_CANCEL}`
-                }
-            }
-            i++;
-          });
-        }
-
-      } catch (error: any) {
-        logger.error(`Error while checking Fulfillments Delivery Obj in /${ApiSequence.ON_STATUS_PICKED}, ${error.stack}`)
-      }
-    }
-
     return onStatusObj
   } catch (err: any) {
     logger.error(`!!Some error occurred while checking /${constants.ON_STATUS} API`, err)

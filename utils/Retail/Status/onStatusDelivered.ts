@@ -371,55 +371,6 @@ export const checkOnStatusDelivered = (data: any, state: string, msgIdSet: any, 
       }
     }
 
-
-    if (flow == '6') {
-      try {
-        // For Delivery Object
-        const fulfillments = on_status.fulfillments
-        if (!fulfillments.length) {
-          const key = `missingFulfillments`
-          onStatusObj[key] = `missingFulfillments is mandatory for ${ApiSequence.ON_STATUS_PACKED}`
-        }
-        else {
-          const fulfillmentsItemsStatusSet = new Set()
-          fulfillments.forEach((ff: any, i: number) => {
-            if (ff.type == "Delivery" && !_.isEqual(ff?.start?.time?.timestamp, getValue("deliveryTmpStmp"))) {
-              onStatusObj[`message/order.fulfillments/${i}`] = `Mismatch occur while comparing ${ff.type} fulfillment start timestamp with the ${ApiSequence.ON_STATUS_PICKED}`
-            }
-            fulfillmentsItemsStatusSet.add(JSON.stringify(ff))
-          });
-          let i: number = 0
-          fulfillmentsItemsSet.forEach((obj1: any) => {
-            const exist = fulfillments.some((obj2: any) => {
-              if (obj2.type == "Delivery") {
-                delete obj2?.tags
-                delete obj2?.instructions
-                delete obj2?.start?.time?.timestamp
-                delete obj2?.end?.time?.timestamp
-              }
-              delete obj2?.state
-              return _.isEqual(obj1, obj2)
-            });
-            if (!exist) {
-              onStatusObj[`message/order.fulfillments/${i}`] = `Mismatch occur while comparing '${obj1.type}' fulfillment (without state, tags, instructions)  with the previous calls`
-            }
-            i++;
-          });
-          fulfillmentsItemsSet.clear();
-          fulfillmentsItemsStatusSet.forEach((ff: any) => {
-            const obj: any = JSON.parse(ff)
-            delete obj?.state
-            delete obj?.start?.time
-            delete obj?.end?.time
-            fulfillmentsItemsSet.add(obj)
-          })
-        }
-
-      } catch (error: any) {
-        logger.error(`Error while checking Fulfillments Delivery Obj in /${ApiSequence.ON_STATUS_PACKED}, ${error.stack}`)
-      }
-    }
-
     return onStatusObj
   } catch (err: any) {
     logger.error(`!!Some error occurred while checking /${constants.ON_STATUS} API`, err)
