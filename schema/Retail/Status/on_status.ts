@@ -75,7 +75,7 @@ export const onStatusSchema = {
         'city',
         'country',
         'ttl',
-        'timestamp'
+        'timestamp',
       ],
     },
     message: {
@@ -275,7 +275,7 @@ export const onStatusSchema = {
                     },
                     then: {
                       allOf: timeRules,
-                    }
+                    },
                   },
                   {
                     if: {
@@ -315,15 +315,10 @@ export const onStatusSchema = {
                             required: ['descriptor'],
                           },
                         },
-                        required: [
-                          'id',
-                          'type',
-                          'state',
-                        ],
-                      }
+                        required: ['id', 'type', 'state'],
+                      },
                     },
-                    else
-                      : {
+                    else: {
                       type: 'object',
                       properties: {
                         id: {
@@ -601,8 +596,8 @@ export const onStatusSchema = {
                         'start',
                         'end',
                       ],
-                    }
-                  }
+                    },
+                  },
                 ],
               },
             },
@@ -617,7 +612,7 @@ export const onStatusSchema = {
                     },
                     value: {
                       type: 'string',
-                      pattern: '^[0-9]+(\.[0-9]{1,2})?$',
+                      pattern: '^[0-9]+(.[0-9]{1,2})?$',
                       errorMessage: 'Price value should be a number in string with upto 2 decimal places',
                     },
                   },
@@ -654,7 +649,7 @@ export const onStatusSchema = {
                           },
                           value: {
                             type: 'string',
-                            pattern: '^[0-9]+(\.[0-9]{1,2})?$',
+                            pattern: '^[0-9]+(.[0-9]{1,2})?$',
                             errorMessage: 'Price value should be a number in string with upto 2 decimal places',
                           },
                         },
@@ -674,7 +669,7 @@ export const onStatusSchema = {
                               },
                               value: {
                                 type: 'string',
-                                pattern: '^[0-9]+(\.[0-9]{1,2})?$',
+                                pattern: '^[0-9]+(.[0-9]{1,2})?$',
                                 errorMessage: 'Price value should be a number in string with upto 2 decimal places',
                               },
                             },

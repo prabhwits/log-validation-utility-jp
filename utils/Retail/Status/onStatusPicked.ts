@@ -1,16 +1,18 @@
 /* eslint-disable no-prototype-builtins */
 import _ from 'lodash'
-import constants, { ApiSequence } from '../../../constants'
+import constants, { ApiSequence, ROUTING_ENUMS } from '../../../constants'
 import { logger } from '../../../shared/logger'
 import { validateSchema, isObjectEmpty, checkContext, areTimestampsLessThanOrEqualTo, compareTimeRanges } from '../..'
 import { getValue, setValue } from '../../../shared/dao'
 
+export const checkOnStatusPicked = (data: any, state: string, msgIdSet: any, fulfillmentsItemsSet: any) => {
 export const checkOnStatusPicked = (data: any, state: string, msgIdSet: any, fulfillmentsItemsSet: any) => {
   const onStatusObj: any = {}
   try {
     if (!data || isObjectEmpty(data)) {
       return { [ApiSequence.ON_STATUS_PICKED]: 'JSON cannot be empty' }
     }
+    const flow = getValue('flow')
     const flow = getValue('flow')
     const { message, context }: any = data
     if (!message || !context || isObjectEmpty(message)) {
@@ -143,7 +145,7 @@ export const checkOnStatusPicked = (data: any, state: string, msgIdSet: any, ful
                 }
                 else {
                   const routingTagType = routingTagTypeArr[0]
-                  if (!['P2P', 'P2H2P'].includes(routingTagType.value)) {
+                  if (!ROUTING_ENUMS.includes(routingTagType.value)) {
                     const key = `missingRouting/Tag/List/Type/Value`;
                     onStatusObj[key] = `RoutingTagListType Value is mandatory in RoutingTag of Delivery Object for ${ApiSequence.ON_STATUS_PICKED} and should be equal to 'P2P' or 'P2H2P'`;
                   }
@@ -309,6 +311,45 @@ export const checkOnStatusPicked = (data: any, state: string, msgIdSet: any, ful
       logger.info(
         `Error while checking pickup timestamp in /${constants.ON_STATUS}_${state}.json Error: ${error.stack}`,
       )
+    }
+
+    if (flow === '6') {
+      try {
+        // For Delivery Object
+        const fulfillments = on_status.fulfillments
+        if (!fulfillments.length) {
+          const key = `missingFulfillments`
+          onStatusObj[key] = `missingFulfillments is mandatory for ${ApiSequence.ON_STATUS_PICKED}`
+        }
+        else {
+          fulfillments.forEach((ff: any) => {
+            if (ff.type == "Delivery") {
+              setValue("deliveryTmpStmp", ff?.start?.time?.timestamp)
+            }
+          });
+          let i: number = 0
+          fulfillmentsItemsSet.forEach((obj1: any) => {
+            const exist = fulfillments.some((obj2: any) => {
+
+              if (obj2.type == "Delivery") {
+                delete obj2?.instructions
+                delete obj2?.start?.time?.timestamp
+                delete obj2?.tags
+              }
+
+              delete obj2?.state
+              return _.isEqual(obj1, obj2)
+            });
+            if (!exist) {
+              onStatusObj[`message/order.fulfillments/${i}`] = `Mismatch occur while comparing '${obj1.type}' fulfillment (without state, tags, instructions)  with the previous calls`
+            }
+            i++;
+          });
+        }
+
+      } catch (error: any) {
+        logger.error(`Error while checking Fulfillments Delivery Obj in /${ApiSequence.ON_STATUS_PICKED}, ${error.stack}`)
+      }
     }
 
     if (flow === '6') {
