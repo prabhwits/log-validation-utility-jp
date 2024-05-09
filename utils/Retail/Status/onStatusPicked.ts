@@ -339,7 +339,12 @@ export const checkOnStatusPicked = (data: any, state: string, msgIdSet: any, ful
               return _.isEqual(obj1, obj2)
             });
             if (!exist) {
-              onStatusObj[`message/order.fulfillments/${i}`] = `Mismatch occur while comparing '${obj1.type}' fulfillment (without state, tags, instructions)  with the previous calls`
+              if (obj1.type === 'Delivery') {
+                onStatusObj[`message/order.fulfillments/${i}`] = `Mismatch occured while comparing '${obj1.type}' fulfillment object(without state, tags, instructions) with ${ApiSequence.ON_STATUS_PENDING}`
+              }
+              if (obj1.type === 'Cancel') {
+                onStatusObj[`message/order.fulfillments/${i}`] = `Mismatch occured while comparing '${obj1.type}' fulfillment object with ${ApiSequence.ON_UPDATE_PART_CANCEL}`
+              }
             }
             i++;
           });
@@ -378,7 +383,12 @@ export const checkOnStatusPicked = (data: any, state: string, msgIdSet: any, ful
               return _.isEqual(obj1, obj2)
             });
             if (!exist) {
-              onStatusObj[`message/order.fulfillments/${i}`] = `Mismatch occur while comparing '${obj1.type}' fulfillment (without state, tags, instructions)  with the previous calls`
+              if(obj1.type==='Delivery'){
+              onStatusObj[`message/order.fulfillments/${i}`] = `Mismatch occured while comparing '${obj1.type}' fulfillment object(without state, tags, instructions) with ${ApiSequence.ON_STATUS_PENDING}`
+              }
+              if(obj1.type==='Cancel'){
+                onStatusObj[`message/order.fulfillments/${i}`] = `Mismatch occured while comparing '${obj1.type}' fulfillment object(without state, tags, instructions) with ${ApiSequence.ON_UPDATE_PART_CANCEL}`
+                }
             }
             i++;
           });
