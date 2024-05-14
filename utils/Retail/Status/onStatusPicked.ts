@@ -253,7 +253,7 @@ export const checkOnStatusPicked = (data: any, state: string, msgIdSet: any, ful
           ]`Delivery fulfillment (${deliveryFulfillment.id}) has incomplete time range.`
         }
         if (storedFulfillment == 'undefined') {
-          setValue('deliveryFulfillment', deliveryFulfillment)
+          setValue('deliveryFulfillment', deliveryFulfillment[0])
         } else {
           const fulfillmentRangeerrors = compareTimeRanges(storedFulfillment, deliveryFulfillment[0])
 

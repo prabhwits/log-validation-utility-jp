@@ -109,19 +109,19 @@ export const checkOnStatusPending = (data: any, state: string, msgIdSet: any, fu
         }
 
         ffId = ff.id
-        if( ff.type != "Cancel") {
-        if (getValue(`${ffId}_tracking`)) {
-          if (ff.tracking === false || ff.tracking === true) {
-            if (getValue(`${ffId}_tracking`) != ff.tracking) {
-              logger.info(`Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`)
-              onStatusObj['ffTracking'] = `Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`
+        if (ff.type != "Cancel") {
+          if (getValue(`${ffId}_tracking`)) {
+            if (ff.tracking === false || ff.tracking === true) {
+              if (getValue(`${ffId}_tracking`) != ff.tracking) {
+                logger.info(`Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`)
+                onStatusObj['ffTracking'] = `Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`
+              }
+            } else {
+              logger.info(`Tracking must be present for fulfillment ID: ${ff.id} in boolean form`)
+              onStatusObj['ffTracking'] = `Tracking must be present for fulfillment ID: ${ff.id} in boolean form`
             }
-          } else {
-            logger.info(`Tracking must be present for fulfillment ID: ${ff.id} in boolean form`)
-            onStatusObj['ffTracking'] = `Tracking must be present for fulfillment ID: ${ff.id} in boolean form`
           }
         }
-      }
       })
     } catch (error: any) {
       logger.info(`Error while checking fulfillments id, type and tracking in /${constants.ON_STATUS}`)
@@ -131,8 +131,9 @@ export const checkOnStatusPending = (data: any, state: string, msgIdSet: any, fu
       logger.info(`Storing delivery fulfillment if not present in ${constants.ON_CONFIRM} and comparing if present`)
       const storedFulfillment = getValue(`deliveryFulfillment`)
       const deliveryFulfillment = on_status.fulfillments.filter((fulfillment: any) => fulfillment.type === 'Delivery')
+      console.log(storedFulfillment, deliveryFulfillment)
       if (storedFulfillment == 'undefined') {
-        setValue('deliveryFulfillment', deliveryFulfillment)
+        setValue('deliveryFulfillment', deliveryFulfillment[0])
       } else {
         const fulfillmentRangeerrors = compareTimeRanges(storedFulfillment, deliveryFulfillment[0])
 
