@@ -427,6 +427,10 @@ export const checkOnsearchFullCatalogRefresh = (data: any) => {
         logger.info(`Checking categories for provider (${prvdr.id}) in bpp/providers[${i}]`)
         let j = 0
         const categories = onSearchCatalog['bpp/providers'][i]['categories']
+        if(!categories || !categories.length){
+          const key = `prvdr${i}categories`
+          errorObj[key] = `categories must be present in bpp/providers[${i}]`
+        }
         const iLen = categories.length
         while (j < iLen) {
           logger.info(`Validating uniqueness for categories id in bpp/providers[${i}].items[${j}]...`)
@@ -997,6 +1001,10 @@ export const checkOnsearchFullCatalogRefresh = (data: any) => {
         logger.info(`Checking serviceability construct for bpp/providers[${i}]`)
 
         const tags = onSearchCatalog['bpp/providers'][i]['tags']
+        if(!tags || !tags.length){
+          const key = `prvdr${i}tags`
+          errorObj[key] = `tags must be present in bpp/providers[${i}]`
+        }
         if (tags) {
           const circleRequired = checkServiceabilityType(tags)
           if (circleRequired) {
