@@ -131,7 +131,6 @@ export const checkOnStatusPending = (data: any, state: string, msgIdSet: any, fu
       logger.info(`Storing delivery fulfillment if not present in ${constants.ON_CONFIRM} and comparing if present`)
       const storedFulfillment = getValue(`deliveryFulfillment`)
       const deliveryFulfillment = on_status.fulfillments.filter((fulfillment: any) => fulfillment.type === 'Delivery')
-      console.log(storedFulfillment, deliveryFulfillment)
       if (storedFulfillment == 'undefined') {
         setValue('deliveryFulfillment', deliveryFulfillment[0])
       } else {

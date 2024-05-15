@@ -234,7 +234,6 @@ export const checkOnConfirm = (data: any) => {
       const { start, end } = deliveryFulfillment[0]
       const startRange = start.time.range
       const endRange = end.time.range
-console.log(deliveryFulfillment[0])
       if (startRange && endRange) {
         setValue('deliveryFulfillment', deliveryFulfillment[0])
       }
