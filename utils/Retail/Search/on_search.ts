@@ -331,29 +331,6 @@ export const checkOnsearch = (data: any) => {
                 `code should have 4:HSN as a value in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code`
             }
           }
-          else if (domain == "16") {
-            if (itemDescType == "4") {
-              const regex = /^\d{4}$|^\d{6}$|^\d{8}$|^\d{10}$/
-              if (!regex.test(itemDescCode)) {
-                const key = `bpp/providers[${i}]/items[${index}]/descriptor/code`
-                errorObj[key] =
-                  `code should provided in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code should be number and have a length 4, 6, 8 or 10.`
-              }
-            }
-            else if (itemDescType == "3") {
-              const regex = /^\d{8}$|^\d{12}$|^\d{13}$|^\d{14}$/
-              if (!regex.test(itemDescCode)) {
-                const key = `bpp/providers[${i}]/items[${index}]/descriptor/code`
-                errorObj[key] =
-                  `code should provided in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code should be number and have a length 8, 12, 13 or 14}.`
-              }
-            }
-            else {
-              const key = `bpp/providers[${i}]/items[${index}]/descriptor/code`
-              errorObj[key] =
-                `code should have 3:GTIN or 4:HSN as a value in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code`
-            }
-          }
           else if (domain != "17") {
             if (itemDescType == "3") {
               const regex = /^\d{8}$|^\d{12}$|^\d{13}$|^\d{14}$/
