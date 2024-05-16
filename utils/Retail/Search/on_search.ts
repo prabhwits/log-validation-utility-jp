@@ -301,7 +301,6 @@ export const checkOnsearch = (data: any) => {
           const itemDescType = itemCodeArr[0]
           const itemDescCode = itemCodeArr[1]
           const domain = getValue('domain')?.substring(3)
-
           if (domain == "10" || domain == "13") {
             if (itemDescType != "1") {
               const key = `bpp/providers[${i}]/items[${index}]/descriptor/code`
@@ -330,6 +329,29 @@ export const checkOnsearch = (data: any) => {
               const key = `bpp/providers[${i}]/items[${index}]/descriptor/code`
               errorObj[key] =
                 `code should have 4:HSN as a value in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code`
+            }
+          }
+          else if (domain == "16") {
+            if (itemDescType == "4") {
+              const regex = /^\d{4}$|^\d{6}$|^\d{8}$|^\d{10}$/
+              if (!regex.test(itemDescCode)) {
+                const key = `bpp/providers[${i}]/items[${index}]/descriptor/code`
+                errorObj[key] =
+                  `code should provided in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code should be number and have a length 4, 6, 8 or 10.`
+              }
+            }
+            else if (itemDescType == "3") {
+              const regex = /^\d{8}$|^\d{12}$|^\d{13}$|^\d{14}$/
+              if (!regex.test(itemDescCode)) {
+                const key = `bpp/providers[${i}]/items[${index}]/descriptor/code`
+                errorObj[key] =
+                  `code should provided in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code should be number and have a length 8, 12, 13 or 14}.`
+              }
+            }
+            else {
+              const key = `bpp/providers[${i}]/items[${index}]/descriptor/code`
+              errorObj[key] =
+                `code should have 3:GTIN or 4:HSN as a value in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code`
             }
           }
           else if (domain != "17") {
@@ -650,10 +672,9 @@ export const checkOnsearch = (data: any) => {
         logger.info(`Checking categories for provider (${prvdr.id}) in bpp/providers[${i}]`)
         let j = 0
         const categories = onSearchCatalog['bpp/providers'][i]['categories']
-        if(!categories || !categories.length)
-        {
+        if (!categories || !categories.length) {
           const key = `prvdr${i}categories`
-            errorObj[key] = `categories must be present in bpp/providers[${i}]`
+          errorObj[key] = `categories must be present in bpp/providers[${i}]`
         }
         const iLen = categories?.length
         while (j < iLen) {
@@ -1143,11 +1164,11 @@ export const checkOnsearch = (data: any) => {
       try {
         logger.info(`Checking serviceability construct for bpp/providers[${i}]`)
         const tags = onSearchCatalog['bpp/providers'][i]['tags']
-        if(!tags || !tags.length){
+        if (!tags || !tags.length) {
           const key = `prvdr${i}tags`
           errorObj[key] = `tags must be present in bpp/providers[${i}]`
         }
-        
+
         if (tags) {
           const circleRequired = checkServiceabilityType(tags)
           if (circleRequired) {
