@@ -337,6 +337,7 @@ export const checkOnCancel = (data: any, msgIdSet: any) => {
               }
             }
           }
+          quoteTrailSum = Number(quoteTrailSum.toFixed(2))
           if (priceAtConfirm != price + quoteTrailSum) {
             const key = `invldQuoteTrailPrices`
             onCnclObj[key] =
