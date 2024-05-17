@@ -1151,7 +1151,7 @@ export const findProviderLocation = (obj: any): boolean => {
   return false
 }
 
-export function compareTimeRanges(data1: any, data2: any): string[] | null {
+export function compareTimeRanges(data1: any, action1: any,  data2: any, action2: any): string[] | null {
   const keys = ['start', 'end']
   const errors: string[] = []
 
@@ -1176,12 +1176,12 @@ export function compareTimeRanges(data1: any, data2: any): string[] | null {
 
     if (range1.start !== range2.start) {
       errors.push(
-        `/${key}/range/start_time "${range1.start}" mismatched with /${key}/range/start_time "${range2.start}"`,
+        `/${key}/range/start_time "${range1.start}" of ${action1} mismatched with /${key}/range/start_time "${range2.start}" of ${action2}`,
       )
     }
 
     if (range1.end !== range2.end) {
-      errors.push(`/${key}/range/end_time "${range1.end}" mismatched with /${key}/range/end_time "${range2.end}"`)
+      errors.push(`/${key}/range/end_time "${range1.end}" of ${action1} mismatched with /${key}/range/end_time "${range2.end}" of ${action2}`)
     }
   })
 

@@ -254,8 +254,10 @@ export const checkOnStatusPicked = (data: any, state: string, msgIdSet: any, ful
         }
         if (storedFulfillment == 'undefined') {
           setValue('deliveryFulfillment', deliveryFulfillment[0])
+          setValue('deliveryFulfillmentAction', ApiSequence.ON_STATUS_PICKED)
         } else {
-          const fulfillmentRangeerrors = compareTimeRanges(storedFulfillment, deliveryFulfillment[0])
+         const storedFulfillmentAction = getValue('deliveryFulfillmentAction')
+      const fulfillmentRangeerrors = compareTimeRanges(storedFulfillment, storedFulfillmentAction, deliveryFulfillment[0], ApiSequence.ON_STATUS_PICKED)
 
           if (fulfillmentRangeerrors) {
             let i = 0

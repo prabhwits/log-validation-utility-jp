@@ -133,8 +133,10 @@ export const checkOnStatusPending = (data: any, state: string, msgIdSet: any, fu
       const deliveryFulfillment = on_status.fulfillments.filter((fulfillment: any) => fulfillment.type === 'Delivery')
       if (storedFulfillment == 'undefined') {
         setValue('deliveryFulfillment', deliveryFulfillment[0])
+        setValue('deliveryFulfillmentAction', ApiSequence.ON_STATUS_PENDING)
       } else {
-        const fulfillmentRangeerrors = compareTimeRanges(storedFulfillment, deliveryFulfillment[0])
+        const storedFulfillmentAction = getValue('deliveryFulfillmentAction')
+        const fulfillmentRangeerrors = compareTimeRanges(storedFulfillment, storedFulfillmentAction, deliveryFulfillment[0], ApiSequence.ON_STATUS_PENDING)
 
         if (fulfillmentRangeerrors) {
           let i = 0
