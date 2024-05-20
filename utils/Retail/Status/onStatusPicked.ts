@@ -256,8 +256,8 @@ export const checkOnStatusPicked = (data: any, state: string, msgIdSet: any, ful
           setValue('deliveryFulfillment', deliveryFulfillment[0])
           setValue('deliveryFulfillmentAction', ApiSequence.ON_STATUS_PICKED)
         } else {
-         const storedFulfillmentAction = getValue('deliveryFulfillmentAction')
-      const fulfillmentRangeerrors = compareTimeRanges(storedFulfillment, storedFulfillmentAction, deliveryFulfillment[0], ApiSequence.ON_STATUS_PICKED)
+          const storedFulfillmentAction = getValue('deliveryFulfillmentAction')
+          const fulfillmentRangeerrors = compareTimeRanges(storedFulfillment, storedFulfillmentAction, deliveryFulfillment[0], ApiSequence.ON_STATUS_PICKED)
 
           if (fulfillmentRangeerrors) {
             let i = 0
@@ -284,19 +284,19 @@ export const checkOnStatusPicked = (data: any, state: string, msgIdSet: any, ful
           }
 
           ffId = ff.id
-          if( ff.type != "Cancel") {
-          if (getValue(`${ffId}_tracking`)) {
-            if (ff.tracking === false || ff.tracking === true) {
-              if (getValue(`${ffId}_tracking`) != ff.tracking) {
-                logger.info(`Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`)
-                onStatusObj['ffTracking'] = `Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`
+          if (ff.type != "Cancel") {
+            if (getValue(`${ffId}_tracking`)) {
+              if (ff.tracking === false || ff.tracking === true) {
+                if (getValue(`${ffId}_tracking`) != ff.tracking) {
+                  logger.info(`Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`)
+                  onStatusObj['ffTracking'] = `Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`
+                }
+              } else {
+                logger.info(`Tracking must be present for fulfillment ID: ${ff.id} in boolean form`)
+                onStatusObj['ffTracking'] = `Tracking must be present for fulfillment ID: ${ff.id} in boolean form`
               }
-            } else {
-              logger.info(`Tracking must be present for fulfillment ID: ${ff.id} in boolean form`)
-              onStatusObj['ffTracking'] = `Tracking must be present for fulfillment ID: ${ff.id} in boolean form`
             }
           }
-        }
         })
       } catch (error: any) {
         logger.info(`Error while checking fulfillments id, type and tracking in /${constants.ON_STATUS}`)
@@ -343,7 +343,29 @@ export const checkOnStatusPicked = (data: any, state: string, msgIdSet: any, ful
               }
               keys.forEach((key: string) => {
                 if (!_.isEqual(obj1[`${key}`], obj2[`${key}`])) {
-                  onStatusObj[`message/order.fulfillments/${i}/${key}`] = `Mismatch occured while comparing '${obj1.type}' fulfillment object with ${ApiSequence.ON_STATUS_PENDING} on key '${key}'`
+                  if ((typeof obj1[`${key}`] == "object" && typeof obj2[`${key}`] == "object") && (Object.keys(obj1[`${key}`]).length > 0 && Object.keys(obj2[`${key}`]).length > 0)) {
+                    const obj1_nested = obj1[`${key}`]
+                    const obj2_nested = obj2[`${key}`]
+                    const obj1_nested_keys = Object.keys(obj1_nested)
+                    const obj2_nested_keys = Object.keys(obj2_nested)
+                    if (obj1_nested_keys.length > obj2_nested_keys.length) {
+                      obj1_nested_keys.forEach((key_nested) => {
+                        if (!_.isEqual(obj1_nested[key_nested], obj2_nested[key_nested])) {
+                          onStatusObj[`message/order.fulfillments/${i}/${key}/${key_nested}`] = `Mismatch occured while comparing '${obj1.type}' fulfillment object with ${ApiSequence.ON_STATUS_PENDING} on key '${key}/${key_nested}'`
+                        }
+                      })
+                    }
+                    else {
+                      obj2_nested_keys.forEach((key_nested) => {
+                        if (!_.isEqual(obj2_nested[key_nested], obj1_nested[key_nested])) {
+                          onStatusObj[`message/order.fulfillments/${i}/${key}/${key_nested}`] = `Mismatch occured while comparing '${obj1.type}' fulfillment object with ${ApiSequence.ON_STATUS_PENDING} on key '${key}/${key_nested}'`
+                        }
+                      })
+                    }
+                  }
+                  else {
+                    onStatusObj[`message/order.fulfillments/${i}/${key}`] = `Mismatch occured while comparing '${obj1.type}' fulfillment object with ${ApiSequence.ON_STATUS_PENDING} on key '${key}'`
+                  }
                 }
               })
             }
