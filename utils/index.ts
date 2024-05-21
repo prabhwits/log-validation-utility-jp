@@ -281,7 +281,7 @@ export const checkSixDigitGpsPrecision = (coordinates: string) => {
   }
 }
 
-export const checkTagConditions = (message: any, context: any) => {
+export const checkTagConditions = (message: any, context: any, apiSeq: string) => {
   const tags = []
   if (message.intent?.tags) {
     const catalogIncTags = message.intent.tags.find(
@@ -296,6 +296,12 @@ export const checkTagConditions = (message: any, context: any) => {
 
       if (modeTag) {
         setValue('multiIncSearch', 'true')
+      }
+
+      if (modeTag && apiSeq == ApiSequence.INC_SEARCH) {
+        if (modeTag.value === 'start' || modeTag.value === "stop") {
+          setValue(`${ApiSequence.INC_SEARCH}_push`, true)
+        }
       }
 
       if (modeTag && modeTag.value !== 'start' && modeTag.value !== 'stop') {

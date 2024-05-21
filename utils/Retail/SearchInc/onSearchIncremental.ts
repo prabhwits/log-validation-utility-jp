@@ -24,6 +24,11 @@ export const checkOnsearchIncremental = (data: any, msgIdSet: any) => {
   const errorObj: any = {}
   try {
     logger.info(`Adding Message Id of /${constants.ON_SEARCHINC}`)
+    if (getValue(`${ApiSequence.INC_SEARCH}_push`)) {
+      if (msgIdSet.has(context.message_id)) {
+        errorObj[`${ApiSequence.INC_ONSEARCH}_msgId`] = `Message id should not be same with previous calls as it's incremental push based call`
+      }
+    }
     msgIdSet.add(context.message_id)
   } catch (error: any) {
     logger.error(`!!Error while checking message id for /${constants.ON_SEARCHINC}, ${error.stack}`)
