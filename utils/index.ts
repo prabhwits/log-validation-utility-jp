@@ -1,7 +1,7 @@
 /* eslint-disable no-prototype-builtins */
 import _ from 'lodash'
 import { logger } from '../shared/logger'
-import constants, { statusArray } from '../constants'
+import constants, { ApiSequence, statusArray } from '../constants'
 import schemaValidator from '../shared/schemaValidator'
 import data from '../constants/AreacodeMap.json'
 import { reasonCodes } from '../constants/reasonCode'
@@ -886,10 +886,9 @@ export const checkMandatoryTags = (i: string, items: any, errorObj: any, categor
           }
         }
       }
-      else
-      {
+      else {
         const key = `invalidCategoryId${ctgrID}`
-       errorObj[key] = `Invalid category_id (${ctgrID}) for ${categoryName}`
+        errorObj[key] = `Invalid category_id (${ctgrID}) for ${categoryName}`
       }
     }
   })
@@ -1151,7 +1150,7 @@ export const findProviderLocation = (obj: any): boolean => {
   return false
 }
 
-export function compareTimeRanges(data1: any, action1: any,  data2: any, action2: any): string[] | null {
+export function compareTimeRanges(data1: any, action1: any, data2: any, action2: any): string[] | null {
   const keys = ['start', 'end']
   const errors: string[] = []
 
@@ -1186,6 +1185,44 @@ export function compareTimeRanges(data1: any, action1: any,  data2: any, action2
   })
 
   return errors.length === 0 ? null : errors
+}
+
+export function compareFulfillmentObject(obj1: any, obj2: any, keys: any, i: number) {
+  const errors: any = []
+  keys.forEach((key: string) => {
+    if (!_.isEqual(obj1[`${key}`], obj2[`${key}`])) {
+      if ((typeof obj1[`${key}`] == "object" && typeof obj2[`${key}`] == "object") && (Object.keys(obj1[`${key}`]).length > 0 && Object.keys(obj2[`${key}`]).length > 0)) {
+        const obj1_nested = obj1[`${key}`]
+        const obj2_nested = obj2[`${key}`]
+        const obj1_nested_keys = Object.keys(obj1_nested)
+        const obj2_nested_keys = Object.keys(obj2_nested)
+        if (obj1_nested_keys.length > obj2_nested_keys.length) {
+          obj1_nested_keys.forEach((key_nested) => {
+            if (!_.isEqual(obj1_nested[key_nested], obj2_nested[key_nested])) {
+              const errKey = `message/order.fulfillments/${i}/${key}/${key_nested}`
+              const errMsg = `Mismatch occured while comparing '${obj1.type}' fulfillment object with ${ApiSequence.ON_STATUS_PENDING} on key '${key}/${key_nested}'`
+              errors.push({ errKey, errMsg })
+            }
+          })
+        }
+        else {
+          obj2_nested_keys.forEach((key_nested) => {
+            if (!_.isEqual(obj2_nested[key_nested], obj1_nested[key_nested])) {
+              const errKey = `message/order.fulfillments/${i}/${key}/${key_nested}`
+              const errMsg = `Mismatch occured while comparing '${obj1.type}' fulfillment object with ${ApiSequence.ON_STATUS_PENDING} on key '${key}/${key_nested}'`
+              errors.push({ errKey, errMsg })
+            }
+          })
+        }
+      }
+      else {
+        const errKey = `message/order.fulfillments/${i}/${key}`
+        const errMsg = `Mismatch occured while comparing '${obj1.type}' fulfillment object with ${ApiSequence.ON_STATUS_PENDING} on key '${key}'`
+        errors.push({ errKey, errMsg })
+      }
+    }
+  })
+  return errors
 }
 
 function isValidTimestamp(timestamp: string): boolean {

@@ -221,7 +221,8 @@ export const checkOnStatusPending = (data: any, state: string, msgIdSet: any, fu
             const deliverObj = deliveryObjArr[0]
             delete deliverObj?.state
             delete deliverObj?.tags
-            delete deliverObj?.instructions
+            delete deliverObj?.start?.instructions
+            delete deliverObj?.end?.instructions
             fulfillmentsItemsSet.add(deliverObj)
           }
         }

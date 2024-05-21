@@ -2,7 +2,7 @@
 import _ from 'lodash'
 import constants, { ApiSequence } from '../../../constants'
 import { logger } from '../../../shared/logger'
-import { validateSchema, isObjectEmpty, checkContext, areTimestampsLessThanOrEqualTo, compareTimeRanges } from '../..'
+import { validateSchema, isObjectEmpty, checkContext, areTimestampsLessThanOrEqualTo, compareTimeRanges, compareFulfillmentObject } from '../..'
 import { getValue, setValue } from '../../../shared/dao'
 
 export const checkOnStatusPacked = (data: any, state: string, msgIdSet: any, fulfillmentsItemsSet: any) => {
@@ -224,36 +224,17 @@ export const checkOnStatusPacked = (data: any, state: string, msgIdSet: any, ful
               obj2 = obj2[0]
               if (obj2.type == "Delivery") {
                 delete obj2?.instructions
+                delete obj2?.start?.instructions
+                delete obj2?.end?.instructions
                 delete obj2?.tags
                 delete obj2?.state
               }
-              keys.forEach((key: string) => {
-                if (!_.isEqual(obj1[`${key}`], obj2[`${key}`])) {
-                  if ((typeof obj1[`${key}`] == "object" && typeof obj2[`${key}`] == "object") && (Object.keys(obj1[`${key}`]).length > 0 && Object.keys(obj2[`${key}`]).length > 0)) {
-                    const obj1_nested = obj1[`${key}`]
-                    const obj2_nested = obj2[`${key}`]
-                    const obj1_nested_keys = Object.keys(obj1_nested)
-                    const obj2_nested_keys = Object.keys(obj2_nested)
-                    if (obj1_nested_keys.length > obj2_nested_keys.length) {
-                      obj1_nested_keys.forEach((key_nested) => {
-                        if (!_.isEqual(obj1_nested[key_nested], obj2_nested[key_nested])) {
-                          onStatusObj[`message/order.fulfillments/${i}/${key}/${key_nested}`] = `Mismatch occured while comparing '${obj1.type}' fulfillment object with ${ApiSequence.ON_STATUS_PENDING} on key '${key}/${key_nested}'`
-                        }
-                      })
-                    }
-                    else {
-                      obj2_nested_keys.forEach((key_nested) => {
-                        if (!_.isEqual(obj2_nested[key_nested], obj1_nested[key_nested])) {
-                          onStatusObj[`message/order.fulfillments/${i}/${key}/${key_nested}`] = `Mismatch occured while comparing '${obj1.type}' fulfillment object with ${ApiSequence.ON_STATUS_PENDING} on key '${key}/${key_nested}'`
-                        }
-                      })
-                    }
-                  }
-                  else {
-                    onStatusObj[`message/order.fulfillments/${i}/${key}`] = `Mismatch occured while comparing '${obj1.type}' fulfillment object with ${ApiSequence.ON_STATUS_PENDING} on key '${key}'`
-                  }
-                }
-              })
+              const errors = compareFulfillmentObject(obj1, obj2, keys, i)
+              if (errors.length > 0) {
+                errors.forEach((item: any) => {
+                  onStatusObj[item.errKey] = item.errMsg
+                })
+              }
             }
             else {
               onStatusObj[`message/order.fulfillments/${i}`] = `Missing fulfillment type '${obj1.type}' in ${ApiSequence.ON_STATUS_PACKED} as compared to ${ApiSequence.ON_STATUS_PENDING}`
