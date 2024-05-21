@@ -347,10 +347,11 @@ export const checkOnsearchIncremental = (data: any, msgIdSet: any) => {
                           const key = `prvdr${i}item${j}time`
                           errorObj[key] = `item_id: ${item.id} should contain time object in bpp/providers[${i}]`
                         }
-
-                        if (!item.category_ids) {
-                          const key = `prvdr${i}item${j}ctgry_ids`
-                          errorObj[key] = `item_id: ${item.id} should contain category_ids in bpp/providers[${i}]`
+                        if (getValue('domain') === "RET11") {
+                          if (!item.category_ids) {
+                            const key = `prvdr${i}item${j}ctgry_ids`
+                            errorObj[key] = `item_id: ${item.id} should contain category_ids in bpp/providers[${i}]`
+                          }
                         }
                       }
 

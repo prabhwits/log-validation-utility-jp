@@ -223,7 +223,6 @@ export const checkOnStatusPacked = (data: any, state: string, msgIdSet: any, ful
             if (obj2.length > 0) {
               obj2 = obj2[0]
               if (obj2.type == "Delivery") {
-                delete obj2?.instructions
                 delete obj2?.start?.instructions
                 delete obj2?.end?.instructions
                 delete obj2?.tags
