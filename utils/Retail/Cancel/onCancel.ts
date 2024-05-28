@@ -637,6 +637,11 @@ export const checkOnCancel = (data: any, msgIdSet: any) => {
                 }
               }
             }
+            else {
+              if (!_.isEmpty(rto_obj_end.time)) {
+                onCnclObj[`rtoFFObj/end/time`] = `fulfillment type rto end/time should not be present in /${constants.ON_CANCEL} when state/desc/code is RTO-Initiated`
+              }
+            }
             if (!_.isEmpty(rto_obj_end?.location)) {
               rto_end_location = rto_obj_end.location
             }
