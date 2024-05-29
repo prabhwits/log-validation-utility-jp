@@ -343,7 +343,7 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
                         const priceAtConfirm = Number(getValue('quotePrice'))
                         const cancelFulfillments = _.filter(on_update.fulfillments, { type: 'Cancel' })
                         logger.info(`Checking for quote_trail price and item quote price sum for ${apiSeq}`)
-                        checkQuoteTrailSum(cancelFulfillments, price, priceAtConfirm, onupdtObj)
+                        checkQuoteTrailSum(cancelFulfillments, price, priceAtConfirm, onupdtObj, ApiSequence.ON_UPDATE)
                     } else {
                         logger.error(
                             `The price breakdown in brakup does not match with the total_price for ${apiSeq} `,
@@ -519,7 +519,7 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
                         apiSeq == ApiSequence.ON_UPDATE_PICKED || apiSeq == ApiSequence.ON_UPDATE_DELIVERED
                     ) {
                         logger.info(`Checking for quote_trail price and item quote price sum for ${apiSeq}`)
-                        checkQuoteTrailSum(returnCancelFulfillments, price, priceAtConfirm, onupdtObj)
+                        checkQuoteTrailSum(returnCancelFulfillments, price, priceAtConfirm, onupdtObj, ApiSequence.ON_UPDATE)
                     }
                 } else {
                     logger.error(`The price breakdown in brakup does not match with the total_price for ${apiSeq} `)
@@ -654,7 +654,7 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
                         item.type === 'Return' || item.type === 'Cancel')
                     if (apiSeq == ApiSequence.ON_UPDATE_LIQUIDATED) {
                         logger.info(`Checking for quote_trail price and item quote price sum for ${apiSeq}`)
-                        checkQuoteTrailSum(returnCancelFulfillments, price, priceAtConfirm, onupdtObj)
+                        checkQuoteTrailSum(returnCancelFulfillments, price, priceAtConfirm, onupdtObj, ApiSequence.ON_UPDATE)
                     }
                 } else {
                     logger.error(`The price breakdown in brakup does not match with the total_price for ${apiSeq} `)
