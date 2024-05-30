@@ -507,6 +507,58 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
             flowSixAChecks(message.order)
         }
         if (flow === '6-b') {
+
+            // Checking for location id is there or not in start/end object of return fulfillment
+            if (apiSeq == ApiSequence.ON_UPDATE_APPROVAL || apiSeq == ApiSequence.ON_UPDATE_PICKED || apiSeq == ApiSequence.ON_UPDATE_DELIVERED) {
+                try {
+                    // For Return Object
+                    const RETobj = _.filter(on_update.fulfillments, { type: 'Return' })
+                    let ret_end_location: any = {}
+                    let ret_start_location: any = {}
+                    if (!RETobj.length) {
+                        logger.error(`Return object is mandatory for ${apiSeq}`)
+                        const key = `missingReturn`
+                        onupdtObj[key] = `Return object is mandatory for ${apiSeq}`
+                    } else {
+                        // Checking for end object inside Return
+                        if (!_.isEmpty(RETobj[0]?.end)) {
+                            const ret_obj_end = RETobj[0]?.end
+                            if (!_.isEmpty(ret_obj_end?.location)) {
+                                ret_end_location = ret_obj_end.location
+                                if (!ret_end_location.id) {
+                                    onupdtObj['Return.end.location.id'] = `Return fulfillment end location id is missing in ${apiSeq}`
+                                }
+                            }
+                            else {
+                                onupdtObj['Return.end.location'] = `Return fulfillment end location object is missing in ${apiSeq}`
+                                logger.error(`Return fulfillment end location is missing in ${apiSeq}`)
+                            }
+                        } else {
+                            onupdtObj['ReturnFulfillment.end'] = `Return fulfillment end object is missing in ${apiSeq}`
+                        }
+
+                        // Checking for start object inside Return
+                        if (!_.isEmpty(RETobj[0]?.start)) {
+                            const ret_obj_start = RETobj[0]?.start
+                            if (!_.isEmpty(ret_obj_start?.location)) {
+                                ret_start_location = ret_obj_start.location
+                                if (ret_start_location.id) {
+                                    onupdtObj['Return.start.location.id'] = `Return fulfillment start location id is not required in ${apiSeq}`
+                                }
+                            }
+                            else {
+                                onupdtObj['Return.start.location'] = `Return fulfillment start location object is missing in ${apiSeq}`
+                                logger.error(`Return fulfillment start location is missing in ${apiSeq}`)
+                            }
+                        } else {
+                            onupdtObj['ReturnFulfillment.start'] = `Return fulfillment start object is missing in ${apiSeq}`
+                        }
+                    }
+                } catch (error: any) {
+                    logger.error(`Error while checking Fulfillments Return Obj in /${apiSeq}, ${error.stack}`)
+                }
+            }
+
             // Checking for quote_trail price and item quote price
             try {
                 if (sumQuoteBreakUp(on_update.quote)) {
@@ -604,8 +656,6 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
             } catch (error: any) {
                 logger.error(`!!Error while mapping cancellation_reason_id in ${apiSeq}`)
             }
-
-
         }
         if (flow === '6-c') {
             try {
