@@ -62,6 +62,8 @@ export const checkOnsearchIncremental = (data: any, msgIdSet: any) => {
     logger.error(`!!Error while storing BAP and BPP Ids in /${constants.ON_SEARCH}, ${error.stack}`)
   }
 
+  const onSearchContext: any = getValue(`${ApiSequence.ON_SEARCH}_context`)
+
   try {
     logger.info(`Comparing city Ids of  /${ApiSequence.INC_ONSEARCH}`)
     if (context.city !== '*') {
@@ -99,6 +101,17 @@ export const checkOnsearchIncremental = (data: any, msgIdSet: any) => {
     )
   }
 
+  try {
+    logger.info(`Comparing timestamp of /${constants.ON_SEARCHINC} and /${constants.ON_SEARCH}`)
+    const tmpstmp = onSearchContext?.timestamp
+    if (_.gte(tmpstmp, context.timestamp)) {
+      errorObj['tmpstmp/'] = `Timestamp for /${constants.ON_SEARCH} api cannot be greater than or equal to /${constants.ON_SEARCHINC} api`
+    }
+  } catch (error: any) {
+    logger.info(
+      `Error while comparing timestamp for /${constants.ON_SEARCH} and /${constants.ON_SEARCHINC} api, ${error.stack}`,
+    )
+  }
 
   // Checking for mandatory Items in provider IDs
   try {
