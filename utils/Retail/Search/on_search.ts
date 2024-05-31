@@ -1446,7 +1446,7 @@ export const checkOnsearch = (data: any) => {
                   }
                   break
                 case 'type':
-                  break  
+                  break
                 default:
                   errorObj[`prvdr${i}/tags/tag_timings/${typeValue}`] = `Invalid list.code for 'timing': ${item.code}`
               }
@@ -1489,6 +1489,14 @@ export const checkOnsearch = (data: any) => {
                 errorObj[`prvdr${i}/tags/timing/${type}`] = `The timings object must be present for ${type} in the tags`
               }
             })
+            arrTimingTypes.forEach((type: any) => {
+              if (!onSearchFFTypeSet.has(type)) {
+                errorObj[`prvdr${i}/tags/timing/${type}`] = `The timings object ${type} is not present in the onSearch fulfillments`
+              }
+            })
+            if (!arrTimingTypes.has('Order')) {
+              errorObj[`prvdr${i}/tags/timing/order`] = `The timings object must be present for Order in the tags`
+            }
           }
 
         }
