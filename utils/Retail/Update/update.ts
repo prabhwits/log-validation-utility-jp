@@ -47,8 +47,7 @@ export const checkUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementDet
         if (apiSeq === ApiSequence.UPDATE_LIQUIDATED || apiSeq === ApiSequence.UPDATE_REVERSE_QC) {
           setValue('timestamp_', [context.timestamp, apiSeq])
           const returnFulfillmentArr = _.filter(update?.fulfillments, { type: "Return" })
-          if (returnFulfillmentArr.length > 0) {
-            const returnFulfillment = returnFulfillmentArr[0]
+          function getReturnFfIdAndQuantity(returnFulfillment: any): any {
             if (!isEmpty(returnFulfillment?.tags)) {
               const returnFulifllmentTags = returnFulfillment?.tags[0]
               if (!isEmpty(returnFulifllmentTags?.list)) {
@@ -71,7 +70,7 @@ export const checkUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementDet
                 else {
                   updtObj['returnFulfillment/code/item_quantity'] = `Return fulfillment/tags/list/code/item_quantity is missing in ${apiSeq}`
                 }
-                setValue(`${apiSeq}_ffId_itemQuantiy`, { ffId: ffId, itemQuantity: itemQuantity, apiSeq: apiSeq })
+                return { ffId: ffId, itemQuantity: itemQuantity }
               }
               else {
                 updtObj[`returnFulfillment`] = `Return fulfillment/tags/list is missing in ${apiSeq}`
@@ -80,6 +79,18 @@ export const checkUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementDet
             else {
               updtObj[`returnFulfillment`] = `Return fulfillment/tags is missing in ${apiSeq}`
             }
+          }
+          if (returnFulfillmentArr.length > 0) {
+            let obj = getReturnFfIdAndQuantity(returnFulfillmentArr[0])
+            if (returnFulfillmentArr.length > 1) {
+              const obj2 = getReturnFfIdAndQuantity(returnFulfillmentArr[1])
+              const returnFfReverseQc: any = getValue(`${ApiSequence.UPDATE_REVERSE_QC}_ffId_itemQuantiy`)
+              if (obj2?.ffId == returnFfReverseQc?.ffId) {
+                obj.ffId = obj2?.ffId
+                obj.itemQuantity = obj2?.itemQuantity
+              }
+            }
+            setValue(`${apiSeq}_ffId_itemQuantiy`, { ffId: obj?.ffId, itemQuantity: obj?.itemQuantity, apiSeq: apiSeq })
           }
           else {
             updtObj[`returnFulfillment`] = `Return fulfillment is missing in ${apiSeq}`

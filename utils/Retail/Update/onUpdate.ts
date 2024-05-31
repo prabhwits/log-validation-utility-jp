@@ -504,19 +504,18 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
 
             try {
                 const returnFulfillmentArr = _.filter(on_update?.fulfillments, { type: "Return" })
-                if (returnFulfillmentArr.length > 0) {
-                    const returnFulfillment = returnFulfillmentArr[0]
+                function getReturnFfIdAndQuantity(returnFulfillment: any): any {
                     const ffId = returnFulfillment?.id
                     if (!ffId) {
                         onupdtObj["returnFulfillmentId"] = `Fulfillment ID is missing for return fulfillment in ${apiSeq}`
                     }
+                    let itemQuantity = ""
                     if (!_.isEmpty(returnFulfillment?.tags)) {
                         const returnFulifllmentTags = returnFulfillment?.tags[0]
                         if (!_.isEmpty(returnFulifllmentTags?.list)) {
                             const returnFulifillmentTagsList = returnFulifllmentTags.list
 
                             const itemQuantityArr = _.filter(returnFulifillmentTagsList, { code: "item_quantity" })
-                            let itemQuantity = ""
 
                             if (itemQuantityArr.length > 0 && itemQuantityArr[0]?.value) {
                                 itemQuantity = itemQuantityArr[0]?.value
@@ -524,22 +523,7 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
                             else {
                                 onupdtObj['returnFulfillment/code/item_quantity'] = `Return fulfillment/tags/list/code/item_quantity is missing in ${apiSeq}`
                             }
-                            let updateReturnFfIdAndQuantiy: any = "";
-                            if (flow === '6-b') {
-                                updateReturnFfIdAndQuantiy = getValue(`${ApiSequence.UPDATE_REVERSE_QC}_ffId_itemQuantiy`)
-                            }
-                            else {
-                                updateReturnFfIdAndQuantiy = getValue(`${ApiSequence.UPDATE_LIQUIDATED}_ffId_itemQuantiy`)
-                            }
 
-                            if (!_.isEmpty(updateReturnFfIdAndQuantiy)) {
-                                if (ffId && updateReturnFfIdAndQuantiy?.ffId && ffId != updateReturnFfIdAndQuantiy?.ffId) {
-                                    onupdtObj['returnFulfillment/id'] = `Mismatch occur between the fulfillment Id of ${apiSeq} ${ffId} and fulfillment Id of ${updateReturnFfIdAndQuantiy?.apiSeq} ${updateReturnFfIdAndQuantiy?.ffId}`
-                                }
-                                if (itemQuantity && updateReturnFfIdAndQuantiy?.itemQuantity  && itemQuantity != updateReturnFfIdAndQuantiy?.itemQuantity) {
-                                    onupdtObj['returnFulfillment/itemQuantity'] = `itemQuantity mismatch between the ${apiSeq} and ${updateReturnFfIdAndQuantiy?.apiSeq}`
-                                }
-                            }
                         }
                         else {
                             onupdtObj[`returnFulfillment`] = `Return fulfillment/tags/list is missing in ${apiSeq}`
@@ -547,6 +531,35 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
                     }
                     else {
                         onupdtObj[`returnFulfillment`] = `Return fulfillment/tags is missing in ${apiSeq}`
+                    }
+                    return { ffId: ffId, itemQuantity: itemQuantity }
+                }
+                if (returnFulfillmentArr.length > 0) {
+                    let obj = getReturnFfIdAndQuantity(returnFulfillmentArr[0])
+                    if (returnFulfillmentArr.length > 1) {
+                        const obj2 = getReturnFfIdAndQuantity(returnFulfillmentArr[1])
+                        const returnFfIdAndQuantiy: any = getValue(`${ApiSequence.UPDATE_REVERSE_QC}_ffId_itemQuantiy`)
+                        if (obj?.ffId == returnFfIdAndQuantiy?.ffId) {
+                            obj.ffId = obj2?.ffId
+                            obj.itemQuantity = obj2?.itemQuantity
+                        }
+                    }
+
+                    let updateReturnFfIdAndQuantiy: any = "";
+                    if (flow === '6-b') {
+                        updateReturnFfIdAndQuantiy = getValue(`${ApiSequence.UPDATE_REVERSE_QC}_ffId_itemQuantiy`)
+                    }
+                    else {
+                        updateReturnFfIdAndQuantiy = getValue(`${ApiSequence.UPDATE_LIQUIDATED}_ffId_itemQuantiy`)
+                    }
+
+                    if (!_.isEmpty(updateReturnFfIdAndQuantiy)) {
+                        if (obj?.ffId && updateReturnFfIdAndQuantiy?.ffId && obj?.ffId != updateReturnFfIdAndQuantiy?.ffId) {
+                            onupdtObj['returnFulfillment/id'] = `Mismatch occur between the fulfillment Id of ${apiSeq} ${obj?.ffId} and fulfillment Id of ${updateReturnFfIdAndQuantiy?.apiSeq} ${updateReturnFfIdAndQuantiy?.ffId}`
+                        }
+                        if (obj?.itemQuantity && updateReturnFfIdAndQuantiy?.itemQuantity && obj?.itemQuantity != updateReturnFfIdAndQuantiy?.itemQuantity) {
+                            onupdtObj['returnFulfillment/itemQuantity'] = `itemQuantity mismatch between the ${apiSeq} and ${updateReturnFfIdAndQuantiy?.apiSeq}`
+                        }
                     }
                 }
                 else {
