@@ -384,11 +384,13 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
                 try {
                     logger.info(`Reason_id mapping for cancel_request`)
                     const fulfillments = on_update.fulfillments
+                    let cancelRequestPresent = false
                     fulfillments.map((fulfillment: any) => {
                         if (fulfillment.type == 'Cancel') {
                             const tags = fulfillment.tags
                             tags.map((tag: any) => {
                                 if (tag.code == 'cancel_request') {
+                                    cancelRequestPresent = true
                                     const lists = tag.list
                                     let reason_id = ''
                                     lists.map((list: any) => {
@@ -411,6 +413,9 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
                             })
                         }
                     })
+                    if (!cancelRequestPresent) {
+                        onupdtObj['cancelRequest'] =  `Cancel request is not present in the 'Cancel' fulfillment`
+                    }
                 } catch (error: any) {
                     logger.error(`!!Error while mapping cancellation_reason_id in ${apiSeq}`)
                 }
@@ -694,9 +699,10 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
                     if (fulfillment.type !== 'Return') return
 
                     const tags = fulfillment.tags
+                    let returnRequestPresent = false    
                     tags.forEach((tag: any) => {
                         if (tag.code !== 'return_request') return
-
+                        returnRequestPresent = true
                         const lists = tag.list
                         let reason_id = 'not_found'
 
@@ -719,6 +725,9 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
                             }
                         })
                     })
+                    if (!returnRequestPresent) {
+                        onupdtObj['returnRequest'] =  `return request is not present in the 'Return' fulfillment`
+                    }
                 })
             } catch (error: any) {
                 logger.error(`!!Error while mapping cancellation_reason_id in ${apiSeq}`)
@@ -732,9 +741,10 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
                     if (fulfillment.type !== 'Return') return
 
                     const tags = fulfillment.tags
+                    let returnRejectedRequestPresent = false    
                     tags.forEach((tag: any) => {
                         if (tag.code !== 'return_request') return
-
+                        returnRejectedRequestPresent = true
                         const lists = tag.list
                         let reason_id = ''
 
@@ -757,6 +767,9 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
                             }
                         })
                     })
+                    if (!returnRejectedRequestPresent) {
+                        onupdtObj['returnRejectedRequest'] =  `return rejected request is not present in the 'Return' fulfillment`
+                    }
                 })
             } catch (error: any) {
                 logger.error(`!!Error while mapping cancellation_reason_id in ${apiSeq}`)
