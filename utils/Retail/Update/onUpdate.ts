@@ -9,9 +9,9 @@ import {
     sumQuoteBreakUp,
     payment_status,
     checkQuoteTrailSum,
-    timeDiff,
 } from '../..'
 import { getValue, setValue } from '../../../shared/dao'
+import { timeDiff } from '../../index';
 import {
     partcancel_return_reasonCodes,
     return_rejected_request_reasonCodes,
@@ -611,9 +611,9 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
                                     if (!_.isEmpty(ret_obj_end_time?.timestamp)) {
                                         const ret_obj_end_time_timestamp = ret_obj_end_time.timestamp
 
-                                        if (!(ret_obj_end_time_timestamp instanceof Date) || ret_obj_end_time_timestamp < new Date(context.timestamp)) {
+                                        if (!(ret_obj_end_time_timestamp instanceof Date) || ret_obj_end_time_timestamp > new Date(context.timestamp)) {
                                             const key = 'returnFF/end/time/timestamp'
-                                            onupdtObj[key] = `end/time/timestamp of return fulfillment should be greater than context/timestamp of ${apiSeq}`
+                                            onupdtObj[key] = `end/time/timestamp of return fulfillment should be less than or equal to context/timestamp of ${apiSeq}`
                                         }
                                     }
                                     else {
@@ -708,6 +708,10 @@ export const checkOnUpdate = (data: any, msgIdSet: any, apiSeq: any, settlementD
                                             if ((startTime instanceof Date) && (endTime instanceof Date) && (ret_obj_start_time_timestamp < startTime || ret_obj_start_time_timestamp > endTime)) {
                                                 const key = 'returnFF/start/time/timestamp'
                                                 onupdtObj[key] = `start/time/timestamp of return fulfillment should be in the valid time/range as in ${ApiSequence.ON_UPDATE_APPROVAL}`
+                                            }
+                                            if (ret_obj_start_time_timestamp > context.timestamp) {
+                                                const key = 'returnFF/start/time/timestamp/'
+                                                onupdtObj[key] = `start/time/timestamp of return fulfillment should be less than context/timestamp of ${apiSeq}`
                                             }
                                         }
                                     }
