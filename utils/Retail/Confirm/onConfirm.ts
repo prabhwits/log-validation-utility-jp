@@ -19,7 +19,7 @@ import {
 } from '../..'
 import { getValue, setValue } from '../../../shared/dao'
 
-export const checkOnConfirm = (data: any) => {
+export const checkOnConfirm = (data: any, fulfillmentsItemsSet: any) => {
   const onCnfrmObj: any = {}
   try {
     if (!data || isObjectEmpty(data)) {
@@ -232,6 +232,7 @@ export const checkOnConfirm = (data: any) => {
     try {
       logger.info(`Storing delivery fulfillment if provided in ${constants.ON_CONFIRM}`)
       const deliveryFulfillment = on_confirm.fulfillments.filter((fulfillment: any) => fulfillment.type === 'Delivery')
+
       const { start, end } = deliveryFulfillment[0]
       const startRange = start.time.range
       const endRange = end.time.range
@@ -241,6 +242,35 @@ export const checkOnConfirm = (data: any) => {
       }
     } catch (error: any) {
       logger.error(`Error while Storing delivery fulfillment, ${error.stack}`)
+    }
+
+    if (on_confirm.state === "Accepted") {
+
+      try {
+        // For Delivery Object
+        const fulfillments = on_confirm.fulfillments
+        if (!fulfillments.length) {
+          const key = `missingFulfillments`
+          onCnfrmObj[key] = `missingFulfillments is mandatory for ${ApiSequence.ON_CONFIRM}`
+        }
+        else {
+          const deliveryObjArr = _.filter(fulfillments, { type: "Delivery" })
+          if (!deliveryObjArr.length) {
+            onCnfrmObj[`message/order.fulfillments/`] = `Delivery fullfillment must be present in ${ApiSequence.ON_CONFIRM} if the Order.state is 'Accepted'`
+          }
+          else {
+            const deliverObj = deliveryObjArr[0]
+            delete deliverObj?.state
+            delete deliverObj?.tags
+            delete deliverObj?.start?.instructions
+            delete deliverObj?.end?.instructions
+            fulfillmentsItemsSet.add(deliverObj)
+          }
+        }
+
+      } catch (error: any) {
+        logger.error(`Error while checking Fulfillments Delivery Obj in /${ApiSequence.ON_CONFIRM}, ${error.stack}`)
+      }
     }
 
     try {
