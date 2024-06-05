@@ -145,6 +145,8 @@ export const checkOnConfirm = (data: any) => {
       logger.info(`checking created_at and updated_at timestamp in /${constants.ON_CONFIRM}`)
       const cnfrmOrdrCrtd = getValue('ordrCrtd')
       const cnfrmOrdrUpdtd = getValue('ordrUpdtd')
+      if (!_.isEmpty(on_confirm?.state))
+        setValue('onCnfrmState', on_confirm.state)
       if (on_confirm.state === 'Created' || on_confirm.state === 'Accepted') {
         if (cnfrmOrdrCrtd && (!on_confirm.created_at || on_confirm.created_at != cnfrmOrdrCrtd)) {
           onCnfrmObj.crtdtmstmp = `order.created_at timestamp mismatches in /${constants.CONFIRM} and /${constants.ON_CONFIRM}`
@@ -162,7 +164,6 @@ export const checkOnConfirm = (data: any) => {
           onCnfrmObj.updtdtmstmp = `order.updated_at timestamp should be updated as per the context.timestamp (since default fulfillment state is added)`
         }
       }
-      setValue('onCnfrmState', on_confirm.state)
     } catch (error: any) {
       logger.error(`!!Error while checking order timestamps in /${constants.ON_CONFIRM}, ${error.stack}`)
     }
