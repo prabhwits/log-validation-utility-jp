@@ -328,18 +328,17 @@ export const checkOnsearch = (data: any) => {
             case "10":
             case "13":
             case "16":
-            case "18":
               if (itemDescType != "1") {
                 const key = `bpp/providers[${i}]/items[${index}]/descriptor/code`
                 errorObj[key] =
                   `code should have 1:EAN as a value in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code`
               }
               else {
-                const regex = /^\d{8,13}$/
+                const regex = /^\d{8}$|^d{13}$/
                 if (!regex.test(itemDescCode)) {
                   const key = `bpp/providers[${i}]/items[${index}]/descriptor/code`
                   errorObj[key] =
-                    `code should provided in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code should be number and have a between length 8 to 13`
+                    `code should provided in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code(${itemDescCode}) should be number and with either length 8 to 13`
                 }
               }
               break;
@@ -360,6 +359,7 @@ export const checkOnsearch = (data: any) => {
               break;
             case "14":
             case "15":
+            case "18":
               if (itemDescType == "3") {
                 const regex = /^\d{8}$|^\d{12}$|^\d{13}$|^\d{14}$/
                 if (!regex.test(itemDescCode)) {
