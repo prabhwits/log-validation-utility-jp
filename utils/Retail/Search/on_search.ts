@@ -334,11 +334,11 @@ export const checkOnsearch = (data: any) => {
                   `code should have 1:EAN as a value in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code`
               }
               else {
-                const regex = /^\d{8}$|^d{13}$/
+                const regex = /^\d{8}$|^\d{13}$/
                 if (!regex.test(itemDescCode)) {
                   const key = `bpp/providers[${i}]/items[${index}]/descriptor/code`
                   errorObj[key] =
-                    `code should provided in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code(${itemDescCode}) should be number and with either length 8 to 13`
+                    `code should provided in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code(${itemDescCode}) should be number and with either length 8 or 13`
                 }
               }
               break;
@@ -884,7 +884,6 @@ export const checkOnsearch = (data: any) => {
           if ('category_id' in item) {
             itemCategory_id.add(item.category_id)
           }
-
           try {
             if ('category_ids' in item) {
               item[`category_ids`].map((category: string, index: number) => {
@@ -1265,6 +1264,8 @@ export const checkOnsearch = (data: any) => {
                     const key = `prvdr${i}tags${t}ctgry`
                     errorObj[key] =
                       `category in serviceability construct should be one of the category ids bpp/providers[${i}]/items/category_id`
+                      console.log("HELLO")
+                      console.log(itemCategory_id, ctgry.value)
                   }
                 } else {
                   const key = `prvdr${i}tags${t}ctgry`
