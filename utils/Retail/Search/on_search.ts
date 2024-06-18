@@ -1264,8 +1264,6 @@ export const checkOnsearch = (data: any) => {
                     const key = `prvdr${i}tags${t}ctgry`
                     errorObj[key] =
                       `category in serviceability construct should be one of the category ids bpp/providers[${i}]/items/category_id`
-                      console.log("HELLO")
-                      console.log(itemCategory_id, ctgry.value)
                   }
                 } else {
                   const key = `prvdr${i}tags${t}ctgry`
