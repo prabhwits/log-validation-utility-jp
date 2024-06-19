@@ -7,7 +7,7 @@ import {
   validateSchema,
   isObjectEmpty,
   checkContext,
-  timeDiff as timeDifference,
+  // timeDiff as timeDifference,
   checkGpsPrecision,
   emailRegex,
   checkBppIdOrBapId,
@@ -20,6 +20,8 @@ import {
   checkDuplicateParentIdItems,
   checkForDuplicates,
   validateObjectString,
+  validateBapUri,
+  validateBppUri,
 } from '../..'
 import _, { isEmpty } from 'lodash'
 
@@ -66,6 +68,13 @@ export const checkOnsearchFullCatalogRefresh = (data: any) => {
     Object.assign(errorObj, contextRes.ERRORS)
   }
 
+  validateBapUri(context.bap_uri, context.bap_id, errorObj);
+  validateBppUri(context.bpp_uri, context.bpp_id, errorObj);
+
+  if (context.transaction_id == context.message_id) {
+    errorObj['on_search_full_catalog_refresh'] = `Context transaction_id (${context.transaction_id}) and message_id (${context.message_id}) can't be the same.`;
+  }
+  
   setValue(`${ApiSequence.ON_SEARCH}`, data)
 
   const searchContext: any = getValue(`${ApiSequence.SEARCH}_context`)
@@ -98,24 +107,24 @@ export const checkOnsearchFullCatalogRefresh = (data: any) => {
       `Error while comparing transaction ids for /${constants.SEARCH} and /${constants.ON_SEARCH} api, ${error.stack}`,
     )
   }
-
-  try {
-    logger.info(`Comparing timestamp of /${constants.SEARCH} and /${constants.ON_SEARCH}`)
-    const tmpstmp = searchContext?.timestamp
-    if (_.gte(tmpstmp, context.timestamp)) {
-      errorObj.tmpstmp = `Timestamp for /${constants.SEARCH} api cannot be greater than or equal to /${constants.ON_SEARCH} api`
-    } else {
-      const timeDiff = timeDifference(context.timestamp, tmpstmp)
-      logger.info(timeDiff)
-      if (timeDiff > 5000) {
-        errorObj.tmpstmp = `context/timestamp difference between /${constants.ON_SEARCH} and /${constants.SEARCH} should be less than 5 sec`
-      }
-    }
-  } catch (error: any) {
-    logger.info(
-      `Error while comparing timestamp for /${constants.SEARCH} and /${constants.ON_SEARCH} api, ${error.stack}`,
-    )
-  }
+  // removed timestamp difference check
+  // try {
+  //   logger.info(`Comparing timestamp of /${constants.SEARCH} and /${constants.ON_SEARCH}`)
+  //   const tmpstmp = searchContext?.timestamp
+  //   if (_.gte(tmpstmp, context.timestamp)) {
+  //     errorObj.tmpstmp = `Timestamp for /${constants.SEARCH} api cannot be greater than or equal to /${constants.ON_SEARCH} api`
+  //   } else {
+  //     const timeDiff = timeDifference(context.timestamp, tmpstmp)
+  //     logger.info(timeDiff)
+  //     if (timeDiff > 5000) {
+  //       errorObj.tmpstmp = `context/timestamp difference between /${constants.ON_SEARCH} and /${constants.SEARCH} should be less than 5 sec`
+  //     }
+  //   }
+  // } catch (error: any) {
+  //   logger.info(
+  //     `Error while comparing timestamp for /${constants.SEARCH} and /${constants.ON_SEARCH} api, ${error.stack}`,
+  //   )
+  // }
 
   try {
     logger.info(`Comparing Message Ids of /${constants.SEARCH} and /${constants.ON_SEARCH}`)
