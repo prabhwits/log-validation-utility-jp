@@ -38,6 +38,7 @@ import { checkOnStatusPacked } from '../utils/Retail/Status/onStatusPacked'
 import { checkOnStatusPicked } from '../utils/Retail/Status/onStatusPicked'
 import { checkOnStatusOutForDelivery } from '../utils/Retail/Status/onStatusOutForDelivery'
 import { checkOnStatusDelivered } from '../utils/Retail/Status/onStatusDelivered'
+import { checkOnStatusRTODelivered } from '../utils/Retail/Status/onStatusRtoDelivered'
 import { checkCancel } from '../utils/Retail/Cancel/cancel'
 import { checkOnCancel } from '../utils/Retail/Cancel/onCancel'
 import checkRsfReceiverRecon from '../utils/RSF/rsfReceiverRecon'
@@ -126,6 +127,7 @@ export const validateLogs = async (data: any, domain: string, flow: string) => {
       ApiSequence.ON_STATUS_PICKED,
       ApiSequence.ON_STATUS_OUT_FOR_DELIVERY,
       ApiSequence.ON_CANCEL,
+      ApiSequence.ON_STATUS_RTO_DELIVERED
     ]
 
     const flowSixSequence = [
@@ -193,7 +195,6 @@ export const validateLogs = async (data: any, domain: string, flow: string) => {
             return checkSelect_OOS(data, msgIdSet)
           } else {
             return checkSelect(data, msgIdSet, ApiSequence.SELECT)
-            return checkSelect(data, msgIdSet, ApiSequence.SELECT)
           }
         case ApiSequence.ON_SELECT:
           return checkOnSelect(data)
@@ -208,11 +209,13 @@ export const validateLogs = async (data: any, domain: string, flow: string) => {
         case ApiSequence.CONFIRM:
           return checkConfirm(data, msgIdSet)
         case ApiSequence.ON_CONFIRM:
-          return checkOnConfirm(data)
+          return checkOnConfirm(data, fulfillmentsItemsSet)
         case ApiSequence.CANCEL:
           return checkCancel(data, msgIdSet)
         case ApiSequence.ON_CANCEL:
           return checkOnCancel(data, msgIdSet)
+        case ApiSequence.ON_STATUS_RTO_DELIVERED:
+          return checkOnStatusRTODelivered(data)
         case ApiSequence.STATUS:
           return checkStatus(data)
         case ApiSequence.ON_STATUS_PENDING:
@@ -240,7 +243,7 @@ export const validateLogs = async (data: any, domain: string, flow: string) => {
         case ApiSequence.UPDATE_SETTLEMENT_REVERSE_QC:
           return checkUpdate(data, msgIdSet, ApiSequence.UPDATE_SETTLEMENT_REVERSE_QC, settlementDetatilSet, '6-b')
         case ApiSequence.ON_UPDATE_DELIVERED:
-          return checkOnUpdate(data, msgIdSet, ApiSequence.ON_UPDATE_APPROVAL, settlementDetatilSet, quoteTrailItemsSet, fulfillmentsItemsSet, "6-b")
+          return checkOnUpdate(data, msgIdSet, ApiSequence.ON_UPDATE_DELIVERED, settlementDetatilSet, quoteTrailItemsSet, fulfillmentsItemsSet, "6-b")
         case ApiSequence.UPDATE_LIQUIDATED:
           return checkUpdate(data, msgIdSet, ApiSequence.UPDATE_LIQUIDATED, settlementDetatilSet, '6-c')
         case ApiSequence.ON_UPDATE_INTERIM_LIQUIDATED:
@@ -287,6 +290,7 @@ export const validateLogs = async (data: any, domain: string, flow: string) => {
 
 export const IGMvalidateLogs = (data: any) => {
   let logReport: any = {}
+  let retIsResolved = false
 
   try {
     dropDB()
@@ -328,18 +332,25 @@ export const IGMvalidateLogs = (data: any) => {
     }
 
     if (data[IGMApiSequence.RET_ON_ISSUE_STATUS]) {
-      const ret_onissue_status = checkOnIssueStatus(data[IGMApiSequence.RET_ON_ISSUE_STATUS])
-
-      if (!_.isEmpty(ret_onissue_status)) {
-        logReport = { ...logReport, [IGMApiSequence.RET_ON_ISSUE_STATUS]: ret_onissue_status }
+      const { onIssueStatusObj, isResolved } = checkOnIssueStatus(data[IGMApiSequence.RET_ON_ISSUE_STATUS])
+      retIsResolved = isResolved
+      if (!_.isEmpty(onIssueStatusObj)) {
+        logReport = { ...logReport, [IGMApiSequence.RET_ON_ISSUE_STATUS]: onIssueStatusObj }
       }
     }
 
     if (data[IGMApiSequence.RET_ON_ISSUE_STATUS_UNSOLICITED]) {
-      const ret_onissue_status_un = checkOnIssueStatusUnsolicited(data[IGMApiSequence.RET_ON_ISSUE_STATUS_UNSOLICITED])
+      const { onIssueStatusObj, isResolved } = checkOnIssueStatusUnsolicited(
+        data[IGMApiSequence.RET_ON_ISSUE_STATUS_UNSOLICITED],
+        retIsResolved,
+      )
+      retIsResolved = isResolved
 
-      if (!_.isEmpty(ret_onissue_status_un)) {
-        logReport = { ...logReport, [IGMApiSequence.RET_ON_ISSUE_STATUS_UNSOLICITED]: ret_onissue_status_un }
+      if (!retIsResolved) {
+        onIssueStatusObj.respondentActions = `At least one action with respondent_action 'Resolved' exists in /on_issue_status(unsolicited) or /on_issue_status.`
+      }
+      if (!_.isEmpty(onIssueStatusObj)) {
+        logReport = { ...logReport, [IGMApiSequence.RET_ON_ISSUE_STATUS_UNSOLICITED]: onIssueStatusObj }
       }
     }
 

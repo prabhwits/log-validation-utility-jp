@@ -15,10 +15,10 @@ export const onSearchSchema = {
           const: 'on_search',
         },
         country: {
+          country: {
           type: 'string',
-          pattern: '^[A-Z]{3}$',
-          errorMessage: 'Country must be in ISO 3166-1 format (three-letter country code)',
-          minLength: 1,
+          const: 'IND',
+          }
         },
         city: {
           type: 'string',
@@ -299,6 +299,8 @@ export const onSearchSchema = {
                   },
                   ttl: {
                     type: 'string',
+                    format: 'duration',
+                    errorMessage: 'Duration must be RFC3339 duration.',
                   },
                   locations: {
                     type: 'array',
@@ -410,7 +412,7 @@ export const onSearchSchema = {
                           required: ['gps', 'radius'],
                         },
                       },
-                      required: ['id', 'time', 'gps', 'address','time'],
+                      required: ['id', 'time', 'gps', 'address', 'time'],
                     },
                   },
                   categories: {
@@ -545,7 +547,7 @@ export const onSearchSchema = {
                                     value: {
                                       type: 'string',
                                       pattern: '^[0-9]+(.[0-9]+)?$',
-                                      errorMessage: 'enter a valid number',
+                                      errorMessage: 'value should be stringified number',
                                     },
                                   },
                                   required: ['unit', 'value'],
@@ -570,7 +572,7 @@ export const onSearchSchema = {
                                 count: {
                                   type: 'string',
                                   pattern: '^[0-9]+$',
-                                  errorMessage: 'maximum count must be numbers only ',
+                                  errorMessage: 'maximum count must be numbers only in string ',
                                 },
                               },
                               required: ['count'],
@@ -613,7 +615,7 @@ export const onSearchSchema = {
                           type: 'boolean',
                         },
                         '@ondc/org/return_window': {
-                          type: 'string',
+                          type: ['string', 'null'],
                           format: 'duration',
                         },
                         '@ondc/org/seller_pickup_return': {
@@ -684,23 +686,41 @@ export const onSearchSchema = {
                               },
                               list: {
                                 type: 'array',
-                                items: [
-                                  {
-                                    type: 'object',
-                                    properties: {
-                                      code: {
-                                        type: 'string',
-                                      },
-                                      value: {
-                                        type: 'string',
-                                      },
+                                items: {
+                                  type: 'object',
+                                  properties: {
+                                    code: {
+                                      type: 'string',
                                     },
-                                    required: ['code', 'value'],
+                                    value: {
+                                      type: 'string',
+                                    },
                                   },
-                                ],
+                                  required: ['code', 'value'],
+                                },
                               },
                             },
                             required: ['code', 'list'],
+                            if: {
+                              properties: { code: { const: 'origin' } },
+                            },
+                            then: {
+                              properties: {
+                                list: {
+                                  items: {
+                                    properties: {
+                                      value: {
+                                        type: 'string',
+                                        pattern:
+                                          '/^A(BW|FG|GO|IA|L[AB]|ND|R[EGM]|SM|T[AFG]|U[ST]|ZE)|B(DI|E[LNS]|FA|G[DR]|H[RS]|IH|L[MRZ]|MU|OL|R[ABN]|TN|VT|WA)|C(A[FN]|CK|H[ELN]|IV|MR|O[DGKLM]|PV|RI|U[BW]|XR|Y[MP]|ZE)|D(EU|JI|MA|NK|OM|ZA)|E(CU|GY|RI|S[HPT]|TH)|F(IN|JI|LK|R[AO]|SM)|G(AB|BR|EO|GY|HA|I[BN]|LP|MB|N[BQ]|R[CDL]|TM|U[FMY])|H(KG|MD|ND|RV|TI|UN)|I(DN|MN|ND|OT|R[LNQ]|S[LR]|TA)|J(AM|EY|OR|PN)|K(AZ|EN|GZ|HM|IR|NA|OR|WT)|L(AO|B[NRY]|CA|IE|KA|SO|TU|UX|VA)|M(A[CFR]|CO|D[AGV]|EX|HL|KD|L[IT]|MR|N[EGP]|OZ|RT|SR|TQ|US|WI|Y[ST])|N(AM|CL|ER|FK|GA|I[CU]|LD|OR|PL|RU|ZL)|OMN|P(A[KN]|CN|ER|HL|LW|NG|OL|R[IKTY]|SE|YF)|QAT|R(EU|OU|US|WA)|S(AU|DN|EN|G[PS]|HN|JM|L[BEV]|MR|OM|PM|RB|SD|TP|UR|V[KN]|W[EZ]|XM|Y[CR])|T(C[AD]|GO|HA|JK|K[LM]|LS|ON|TO|U[NRV]|WN|ZA)|U(GA|KR|MI|RY|SA|ZB)|V(AT|CT|EN|GB|IR|NM|UT)|W(LF|SM)|YEM|Z(AF|MB|WE)$/ix',
+                                        errorMessage:
+                                          'Country must be in ISO 3166-1 format (three-letter country code)',
+                                      },
+                                    },
+                                  },
+                                },
+                              },
+                            },
                           },
                         },
                       },
@@ -726,6 +746,7 @@ export const onSearchSchema = {
                   },
                   tags: {
                     type: 'array',
+                    minItems: 1,
                     items: {
                       allOf: [
                         {
@@ -831,9 +852,10 @@ export const onSearchSchema = {
                                         properties: {
                                           value: {
                                             type: 'string',
-                                            pattern: '^(2[0-3]|[01]?[0-9]|24)[0-5]?[0-9]$',
+                                            pattern: '^([01][0-9]|2[0-3])[0-5][0-9]$',
                                             errorMessage:
                                               "Value for 'time_from' must be a 4-digit numeric value in HHMM format",
+                                            minLength: 4,
                                           },
                                         },
                                         required: ['code', 'value'],
@@ -878,101 +900,29 @@ export const onSearchSchema = {
                               list: {
                                 type: 'array',
                                 items: {
-                                  allOf: [
-                                    {
-                                      if: {
-                                        properties: {
-                                          code: {
-                                            const: 'location',
-                                          },
-                                        },
-                                        required: ['code'],
-                                      },
-                                      then: {
-                                        properties: {
-                                          value: {
-                                            type: 'string',
-                                          },
-                                        },
-                                        required: ['value'],
-                                      },
+                                  type: 'object',
+                                  properties: {
+                                    code: {
+                                      type: 'string',
+                                      enum: ['location', 'category', 'type', 'val', 'unit'],
+                                      errorMessage:
+                                        "Serviceability must have these values 'location', 'category', 'type', 'val', 'unit'",
                                     },
-                                    {
-                                      if: {
-                                        properties: {
-                                          code: {
-                                            const: 'category',
-                                          },
-                                        },
-                                        required: ['code'],
-                                      },
-                                      then: {
-                                        properties: {
-                                          value: {
-                                            type: 'string',
-                                          },
-                                        },
-                                        required: ['value'],
-                                      },
+                                    value: {
+                                      type: 'string',
                                     },
-                                    {
-                                      if: {
-                                        properties: {
-                                          code: {
-                                            const: 'type',
-                                          },
-                                        },
-                                        required: ['code'],
-                                      },
-                                      then: {
-                                        properties: {
-                                          value: {
-                                            type: 'string',
-                                            enum: ['10', '11', '12', '13'],
-                                            errorMessage:
-                                              "Value for 'type' must be enum - '10' (hyperlocal), '11' (intercity), '12' (pan-India), '13' (polygon) only",
-                                          },
-                                        },
-                                        required: ['value'],
-                                      },
-                                    },
-                                    {
-                                      if: {
-                                        properties: {
-                                          code: {
-                                            const: 'val',
-                                          },
-                                        },
-                                        required: ['code'],
-                                      },
-                                      then: {
-                                        properties: {
-                                          value: {
-                                            type: 'string',
-                                          },
-                                        },
-                                        required: ['value'],
-                                      },
-                                    },
-                                    {
-                                      if: {
-                                        properties: {
-                                          code: {
-                                            const: 'unit',
-                                          },
-                                        },
-                                        required: ['code'],
-                                      },
-                                      then: {
-                                        properties: {
-                                          value: {
-                                            type: 'string',
-                                          },
-                                        },
-                                        required: ['value'],
-                                      },
-                                    },
-                                  ],
+                                  },
+                                  required: ['code', 'value'],
+                                  additionalProperties: false,
+                                },
+                                minItems: 5,
+                                maxItems: 5,
+                                uniqueItems: true,
+                                errorMessage: {
+                                  minItems: 'Serviceability must have minimum 5 values',
+                                  maxItems: 'Serviceability must have maximum 5 values',
+                                  uniqueItems: 'Serviceability must have unique items',
+                                  _: "Serviceability must have these values 'location', 'category', 'type', 'val', 'unit' and no duplicacy or other elements allowed",
                                 },
                               },
                             },
@@ -1122,7 +1072,7 @@ export const onSearchSchema = {
                                       then: {
                                         properties: {
                                           value: {
-                                            pattern: '^[0-9]+(.[0-9]{2})?$',
+                                            pattern: '^[0-9]+(?:\.[0-9]{1,2})?$',
                                             errorMessage: 'min_value must be number with exactly two decimal places',
                                           },
                                         },

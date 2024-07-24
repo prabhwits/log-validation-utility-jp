@@ -458,7 +458,7 @@ export const FnBonSearchIncSchema = {
                                 count: {
                                   type: 'string',
                                   pattern: '^[0-9]+$',
-                                  errorMessage: 'maximum count must be numbers only ',
+                                  errorMessage: 'maximum count must be numbers only in string ',
                                 },
                               },
                               required: ['count'],
@@ -475,7 +475,7 @@ export const FnBonSearchIncSchema = {
                             },
                             value: {
                               type: 'string',
-                              pattern: '^[0-9]+(\.[0-9]{1,2})?$',
+                              pattern: '^[-+]?[0-9]+(\.[0-9]{1,2})?$',
                               errorMessage: 'Price value should be a number in string with upto 2 decimal places',
                             },
                             maximum_value: {
@@ -515,7 +515,7 @@ export const FnBonSearchIncSchema = {
                           type: 'boolean',
                         },
                         '@ondc/org/return_window': {
-                          type: 'string',
+                          type: ['string', 'null'],
                           format: 'duration',
                         },
                         '@ondc/org/seller_pickup_return': {

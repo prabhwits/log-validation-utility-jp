@@ -550,6 +550,7 @@ curl --location 'http://localhost:3008/api/validate' \
         "on_status_picked": {},
         "on_status_out_for_delivery": {}
         "on_cancel": {},
+        "on_status_rto_delivered":{}
     },
     "flow": "5"
 }'
@@ -659,7 +660,7 @@ curl --location 'https://log-validation.ondc.org/api/validate/fis/fis12' \
 ### For TRV10 Sample Curl Request (Local)
 
 ```shell
-curl --location 'https://localhost:3006/api/validate/trv/trv10' \
+curl --location 'https://localhost:3006/api/validate/trv' \
 --header 'Content-Type: application/json' \
 --data '{
     "domain": "ONDC:TRV10",

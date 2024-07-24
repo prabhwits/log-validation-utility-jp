@@ -2,20 +2,35 @@
 import _ from 'lodash'
 import constants, { ApiSequence } from '../../../constants'
 import { logger } from '../../../shared/logger'
-import { validateSchema, isObjectEmpty, checkContext, areTimestampsLessThanOrEqualTo, payment_status } from '../..'
+import {
+  validateSchema,
+  isObjectEmpty,
+  checkContext,
+  areTimestampsLessThanOrEqualTo,
+  payment_status,
+  compareTimeRanges,
+} from '../..'
 import { getValue, setValue } from '../../../shared/dao'
 
 export const checkOnStatusPending = (data: any, state: string, msgIdSet: any, fulfillmentsItemsSet: any) => {
   const onStatusObj: any = {}
   try {
+    const onConfirmOrderState = getValue('onCnfrmState')
     if (!data || isObjectEmpty(data)) {
+      if (onConfirmOrderState === "Accepted")
+        return
       return { [ApiSequence.ON_STATUS_PENDING]: 'JSON cannot be empty' }
     }
     const flow = getValue('flow')
     const { message, context }: any = data
     if (!message || !context || isObjectEmpty(message)) {
+      if (onConfirmOrderState === "Accepted")
+        return
       return { missingFields: '/context, /message, is missing or empty' }
     }
+
+    if (onConfirmOrderState === "Accepted")
+      return { errmsg: "When the onConfirm Order State is 'Accepted', the on_status_pending is not required!" }
 
     const searchContext: any = getValue(`${ApiSequence.SEARCH}_context`)
     const schemaValidation = validateSchema(context.domain.split(':')[1], constants.ON_STATUS, data)
@@ -94,30 +109,55 @@ export const checkOnStatusPending = (data: any, state: string, msgIdSet: any, fu
       // Checking fulfillment.id, fulfillment.type and tracking
       logger.info('Checking fulfillment.id, fulfillment.type and tracking')
       on_status.fulfillments.forEach((ff: any) => {
-        let ffId = ""
+        let ffId = ''
 
         if (!ff.id) {
           logger.info(`Fulfillment Id must be present `)
-          onStatusObj["ffId"] = `Fulfillment Id must be present`
+          onStatusObj['ffId'] = `Fulfillment Id must be present`
         }
 
         ffId = ff.id
-
-        if (getValue(`${ffId}_tracking`)) {
-          if (ff.tracking === false || ff.tracking === true) {
-            if (getValue(`${ffId}_tracking`) != ff.tracking) {
-              logger.info(`Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`)
-              onStatusObj["ffTracking"] = `Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`
+        if (ff.type != "Cancel") {
+          if (getValue(`${ffId}_tracking`)) {
+            if (ff.tracking === false || ff.tracking === true) {
+              if (getValue(`${ffId}_tracking`) != ff.tracking) {
+                logger.info(`Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`)
+                onStatusObj['ffTracking'] = `Fulfillment Tracking mismatch with the ${constants.ON_SELECT} call`
+              }
+            } else {
+              logger.info(`Tracking must be present for fulfillment ID: ${ff.id} in boolean form`)
+              onStatusObj['ffTracking'] = `Tracking must be present for fulfillment ID: ${ff.id} in boolean form`
             }
-          }
-          else {
-            logger.info(`Tracking must be present for fulfillment ID: ${ff.id} in boolean form`)
-            onStatusObj["ffTracking"] = `Tracking must be present for fulfillment ID: ${ff.id} in boolean form`
           }
         }
       })
     } catch (error: any) {
       logger.info(`Error while checking fulfillments id, type and tracking in /${constants.ON_STATUS}`)
+    }
+
+    try {
+      logger.info(`Storing delivery fulfillment if not present in ${constants.ON_CONFIRM} and comparing if present`)
+      const storedFulfillment = getValue(`deliveryFulfillment`)
+      const deliveryFulfillment = on_status.fulfillments.filter((fulfillment: any) => fulfillment.type === 'Delivery')
+      if (storedFulfillment == 'undefined') {
+        setValue('deliveryFulfillment', deliveryFulfillment[0])
+        setValue('deliveryFulfillmentAction', ApiSequence.ON_STATUS_PENDING)
+      } else {
+        const storedFulfillmentAction = getValue('deliveryFulfillmentAction')
+        const fulfillmentRangeerrors = compareTimeRanges(storedFulfillment, storedFulfillmentAction, deliveryFulfillment[0], ApiSequence.ON_STATUS_PENDING)
+
+        if (fulfillmentRangeerrors) {
+          let i = 0
+          const len = fulfillmentRangeerrors.length
+          while (i < len) {
+            const key = `fulfilmntRngErr${i}`
+            onStatusObj[key] = `${fulfillmentRangeerrors[i]}`
+            i++
+          }
+        }
+      }
+    } catch (error: any) {
+      logger.error(`Error while Storing delivery fulfillment, ${error.stack}`)
     }
 
     try {
@@ -189,25 +229,10 @@ export const checkOnStatusPending = (data: any, state: string, msgIdSet: any, fu
             const deliverObj = deliveryObjArr[0]
             delete deliverObj?.state
             delete deliverObj?.tags
-            delete deliverObj?.instructions
+            delete deliverObj?.start?.instructions
+            delete deliverObj?.end?.instructions
             fulfillmentsItemsSet.add(deliverObj)
           }
-          let i: number = 0
-          fulfillmentsItemsSet.forEach((obj1: any) => {
-            const exist = fulfillments.some((obj2: any) => {
-              if (obj2.type == "Delivery") {
-                delete obj2?.tags
-                delete obj2?.instructions
-              }
-              delete obj2?.state
-              return _.isEqual(obj1, obj2)
-            });
-            if (!exist) {
-              onStatusObj[`message/order.fulfillments/${i}`] = `Mismatch occur while comparing '${obj1.type}' fulfillment (without state, tags, instructions)  with the previous calls`
-            }
-            i++
-          });
-
         }
 
       } catch (error: any) {

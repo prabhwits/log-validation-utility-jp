@@ -1,6 +1,6 @@
 /* eslint-disable no-prototype-builtins */
 import { getValue, setValue } from '../../../shared/dao'
-import constants, { ApiSequence } from '../../../constants'
+import constants, { ApiSequence, ffCategory } from '../../../constants'
 import { validateSchema, isObjectEmpty, checkContext, timeDiff, isoDurToSec, checkBppIdOrBapId } from '../..'
 import _ from 'lodash'
 import { logger } from '../../../shared/logger'
@@ -123,10 +123,13 @@ export const checkOnSelect = (data: any) => {
   try {
     const fulfillments = message.order.fulfillments
     const selectFlflmntSet: any = []
+    const fulfillment_tat_obj:any={}
     fulfillments.forEach((flflmnt: any) => {
+      fulfillment_tat_obj[flflmnt.id] = isoDurToSec(flflmnt["@ondc/org/TAT"])
       selectFlflmntSet.push(flflmnt.id)
-    })
+    })        
     setValue('selectFlflmntSet', selectFlflmntSet)
+    setValue('fulfillment_tat_obj', fulfillment_tat_obj)
   } catch (error: any) {
     logger.error(`Error while checking for fulfillment IDs for /${constants.ON_SELECT}`, error.stack)
   }
@@ -212,7 +215,6 @@ export const checkOnSelect = (data: any) => {
       itemFlfllmnts[id] = on_select.items[i].fulfillment_id
       i++
     }
-
     setValue('itemFlfllmnts', itemFlfllmnts)
   } catch (error: any) {
     logger.error(`!!Error occurred while mapping and storing item Id and fulfillment Id, ${error.stack}`)
@@ -295,6 +297,37 @@ export const checkOnSelect = (data: any) => {
   } catch (error: any) {
     logger.error(`!!Error while checking fulfillments' state in /${constants.ON_SELECT}, ${error.stack}`)
   }
+
+  try {
+    logger.info(`Checking fulfillments' state in ${constants.ON_SELECT}`)
+    on_select.fulfillments.forEach((ff: any, idx: number) => {
+      if (ff.state) {
+        const ffDesc = ff.state.descriptor
+
+        function checkFFOrgCategory(selfPickupOrDelivery: number) {
+          if (!ff["@ondc/org/category"] || !ffCategory[selfPickupOrDelivery].includes(ff["@ondc/org/category"])) {
+            const key = `fulfillment${idx}/@ondc/org/category`
+            errorObj[key] =
+              `In Fulfillment${idx}, @ondc/org/category is not a valid value in ${constants.ON_SELECT} and should have one of these values ${[ffCategory[selfPickupOrDelivery]]}`
+          }
+        }
+        if (ffDesc.code === 'Serviceable' && ff.type == "Delivery") {
+          checkFFOrgCategory(0)
+        }
+        else if (ff.type == "Self-Pickup") {
+          checkFFOrgCategory(1)
+        }
+      }
+      else {
+        const key = `fulfillment${idx}/descCode`
+        errorObj[key] =
+          `In Fulfillment${idx}, descriptor code is mandatory in ${constants.ON_SELECT}`
+      }
+    });
+  } catch (error: any) {
+    logger.error(`!!Error while checking fulfillments @ondc/org/category in /${constants.ON_SELECT}, ${error.stack}`)
+  }
+
 
   let onSelectPrice: any = 0 //Net price after discounts and tax in /on_select
   let onSelectItemsPrice = 0 //Price of only items in /on_select
@@ -428,7 +461,7 @@ export const checkOnSelect = (data: any) => {
           if (!Object.values(itemFlfllmnts).includes(element['@ondc/org/item_id'])) {
             const brkupffid = `brkupfftitles${i}`
             errorObj[brkupffid] =
-              `invalid  id: ${element['@ondc/org/item_id']} in ${titleType} line item (should be a valid fulfillment_id)`
+              `invalid  id: ${element['@ondc/org/item_id']} in ${titleType} line item (should be a valid fulfillment_id as provided in message.items for the items)`
           }
         }
       })
