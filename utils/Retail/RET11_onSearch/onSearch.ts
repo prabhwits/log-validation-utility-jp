@@ -1284,6 +1284,10 @@ export const checkOnsearchFullCatalogRefresh = (data: any) => {
           const key = `prvdr${i}tags/serviceability`
           errorObj[key] =
             `serviceability construct is mandatory in /bpp/providers[${i}]/tags`
+        } else if (serviceabilitySet.size != itemCategory_id.size) {
+          const key = `prvdr${i}/serviceability`
+          errorObj[key] =
+            `The number of unique category_id should be equal to count of serviceability in /bpp/providers[${i}]`
         }
         if (isEmpty(timingSet)) {
           const key = `prvdr${i}tags/timing`
