@@ -13,8 +13,6 @@ export const checkOnSearch = (data: any, msgIdSet: any, _flow: string, action: s
     return { [constants.ON_SEARCH]: 'JSON cannot be empty' }
   }
 
-  console.log('flow---------------', flow)
-
   const { message, context } = data
   if (!message || !context || !message.catalog || isObjectEmpty(message) || isObjectEmpty(message.catalog)) {
     return { missingFields: '/context, /message, /catalog or /message/catalog is missing or empty' }

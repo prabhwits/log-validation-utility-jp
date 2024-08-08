@@ -432,6 +432,14 @@ export const homeCategories = [
   'Stationery',
   'Gift Voucher',
   'Home & Kitchen',
+  'Bins and Bathroom',
+  'Disposables and Garbage Bags',
+  'Fresheners and Repellents',
+  'Mops, Brushes and Scrubs',
+  'Party and Festive Needs',
+  'Flowers',
+  'Pooja Needs',
+  'Car and Shoe Care',
 ]
 
 export const healthCategories = [
@@ -679,7 +687,6 @@ export enum DOMAIN {
   RET17 = 'RET17',
   RET18 = 'RET18',
   RET19 = 'RET19',
-  RET20 = 'RET20',
   AGR10 = 'AGR10',
   RET1A = 'RET1A'
 }
