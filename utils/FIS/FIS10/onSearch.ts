@@ -8,12 +8,10 @@ import { checkUniqueCategoryIds, validateContext, validateDescriptor } from './f
 import { validateItemsTags } from './tags'
 import { isEmpty } from 'lodash'
 
-export const checkOnSearch = (data: any, msgIdSet: any, flow: string, action: string) => {
+export const checkOnSearch = (data: any, msgIdSet: any, _flow: string, action: string) => {
   if (!data || isObjectEmpty(data)) {
     return { [constants.ON_SEARCH]: 'JSON cannot be empty' }
   }
-
-  console.log('flow---------------', flow)
 
   const { message, context } = data
   if (!message || !context || !message.catalog || isObjectEmpty(message) || isObjectEmpty(message.catalog)) {

@@ -1,4 +1,3 @@
-/* eslint-disable no-prototype-builtins */
 import _ from 'lodash'
 import constants, { ApiSequence } from '../../../constants'
 import { logger } from '../../../shared/logger'

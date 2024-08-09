@@ -262,12 +262,13 @@ export const checkOnConfirm = (data: any, fulfillmentsItemsSet: any) => {
           onCnfrmObj[key] = `missingFulfillments is mandatory for ${ApiSequence.ON_CONFIRM}`
         }
         else {
-          const deliveryObjArr = _.filter(fulfillments, { type: "Delivery" })
+          let deliveryObjArr = _.filter(fulfillments, { type: "Delivery" })
           if (!deliveryObjArr.length) {
             onCnfrmObj[`message/order.fulfillments/`] = `Delivery fullfillment must be present in ${ApiSequence.ON_CONFIRM} if the Order.state is 'Accepted'`
           }
           else {
-            const deliverObj = deliveryObjArr[0]
+            
+            const deliverObj = JSON.parse(JSON.stringify(deliveryObjArr[0]))
             delete deliverObj?.state
             delete deliverObj?.tags
             delete deliverObj?.start?.instructions

@@ -1033,6 +1033,13 @@ export const checkQuoteTrailSum = (
             errorObj[`invalidQuoteTrailType${apiSeq}`] = `Invalid Quote Trail Type '${val.value}'. It should be equal to one of the given value in small_case 'misc', 'packing', 'delivery', 'tax' or 'item'`
           }
         }
+        if(val.code === 'type')
+        {
+          if(!arrType.includes(val.value))
+          {
+            errorObj[`invalidQuoteTrailType${apiSeq}`] = `Invalid Quote Trail Type '${val.value}'. It should be equal to one of the given value in small_case 'misc', 'packing', 'delivery', 'tax' or 'item'`
+          }
+        }
         if (val.code === 'value') {
           quoteTrailSum -= val.value
         }
