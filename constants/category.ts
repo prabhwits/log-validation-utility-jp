@@ -352,6 +352,7 @@ export const groceryCategoryMappingWithStatutory: { [key: string]: statutory_req
   "Dals and Pulses": statutory_reqs.PackagedCommodities,
   "Salt, Sugar and Jaggery": statutory_reqs.PackagedCommodities,
   "Tea and Coffee": statutory_reqs.PackagedCommodities,
+  "Detergents and Dishwash" : statutory_reqs.PackagedCommodities,
   "Fruits and Vegetables": statutory_reqs.None,
   "Water": statutory_reqs.None,
   "Frozen Vegetables": statutory_reqs.None,
