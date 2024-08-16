@@ -257,7 +257,7 @@ const BPCObj: ICategoryJSON = {
     mandatory: false,
     value: [],
   },
-  colour_Name: {
+  colour_name: {
     mandatory: false,
     value: [],
   },
