@@ -583,7 +583,7 @@ export const checkOnCancel = (data: any, msgIdSet: any) => {
                 `Delivery state should be one of ['RTO-Initiated','RTO-Approved','RTO-Completed'] for ${constants.ON_CANCEL}`
             }
             else {
-              if (item.state.descriptor.code == validVal[1] || item.state.descriptor.code == validVal[2]) {
+              if (item.state.descriptor.code == validVal[0] || item.state.descriptor.code == validVal[1]) {
                 rto_delivered_or_disposed = true
               }
             }
