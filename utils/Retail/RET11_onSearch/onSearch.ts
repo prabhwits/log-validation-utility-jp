@@ -716,22 +716,35 @@ export const checkOnsearchFullCatalogRefresh = (data: any) => {
             logger.info(`Checking consumer care details for item id: ${item.id}`)
             if ('@ondc/org/contact_details_consumer_care' in item) {
               let consCare = item['@ondc/org/contact_details_consumer_care']
-              consCare = consCare.split(',')
-              if (consCare.length < 3) {
-                const key = `prvdr${i}consCare`
-                errorObj[key] =
-                  `@ondc/org/contact_details_consumer_care should be in the format "name,email,contactno" in /bpp/providers[${i}]/items`
-              } else {
-                const checkEmail: boolean = emailRegex(consCare[1].trim())
-                if (isNaN(consCare[2].trim()) || !checkEmail) {
+              if (typeof consCare === 'string' && consCare.includes(',')) {
+                consCare = consCare.split(',')
+
+                if (!isValidPhoneNumber(consCare[2])) {
+                  const key = `prvdr${i}consCare`
+                  errorObj[key] =
+                    `@ondc/org/contact_details_consumer_care contactno should consist of  10 or  11 digits without any spaces or special characters in /bpp/providers[${i}]/items`
+                }
+
+                if (consCare.length < 3) {
                   const key = `prvdr${i}consCare`
                   errorObj[key] =
                     `@ondc/org/contact_details_consumer_care should be in the format "name,email,contactno" in /bpp/providers[${i}]/items`
+                } else {
+                  const checkEmail: boolean = emailRegex(consCare[1].trim())
+                  if (isNaN(consCare[2].trim()) || !checkEmail) {
+                    const key = `prvdr${i}consCare`
+                    errorObj[key] =
+                      `@ondc/org/contact_details_consumer_care email should be in /bpp/providers[${i}]/items`
+                  }
                 }
+              } else {
+                const key = `prvdr${i}consCare`;
+                errorObj[key] =
+                  `@ondc/org/contact_details_consumer_care is invalid or missing the required format (name,email,contactno) in /bpp/providers[${i}]/items`;
               }
             }
-          } catch (e: any) {
-            logger.error(`Error while checking consumer care details for item id: ${item.id}, ${e.stack}`)
+          } catch (error: any) {
+            logger.error(`Error while checking consumer care details for item id: ${item.id}, ${error.stack}`)
           }
 
           try {
@@ -996,18 +1009,18 @@ export const checkOnsearchFullCatalogRefresh = (data: any) => {
         customMenus = categories.filter((category: any) =>
           category.tags.some((tag: any) => tag.code === 'type' && tag.list.some((type: any) => type.value === 'custom_menu'))
         );
-      
-        if (customMenus.length > 0) { 
+
+        if (customMenus.length > 0) {
           customMenu = true;
-      
+
           const ranks = customMenus.map((cstmMenu: any) =>
             parseInt(cstmMenu.tags.find((tag: any) => tag.code === 'display').list.find((display: any) => display.code === 'rank').value)
           );
-      
+
           // Check for duplicates and missing ranks
           const hasDuplicates = ranks.length !== new Set(ranks).size;
           const missingRanks = [...Array(Math.max(...ranks)).keys()].map(i => i + 1).filter(rank => !ranks.includes(rank));
-      
+
           if (hasDuplicates) {
             const key = `message/catalog/bpp/providers${i}/categories/ranks`;
             errorObj[key] = `Duplicate ranks found, ${ranks} in providers${i}/categories`;
@@ -1023,14 +1036,14 @@ export const checkOnsearchFullCatalogRefresh = (data: any) => {
               const rankB = parseInt(b.tags.find((tag: any) => tag.code === 'display').list.find((display: any) => display.code === 'rank').value);
               return rankA - rankB;
             });
-      
+
             // Extract IDs
             customMenuIds = sortedCustomMenus.map((item: any) => item.id);
           }
         }
       } catch (error: any) {
         logger.error(`!!Errors while checking rank in bpp/providers[${i}].category.tags, ${error.stack}`);
-      }   
+      }
       if (customMenu) {
         try {
           const categoryMap: Record<string, number[]> = {};
@@ -1531,14 +1544,14 @@ export const checkOnsearchFullCatalogRefresh = (data: any) => {
           const min = configTag ? parseInt(configTag.list.find((item: any) => item.code === "min")?.value, 10) : 0;
           const max = configTag ? parseInt(configTag.list.find((item: any) => item.code === "max")?.value, 10) : 0;
 
-          if(min > max){
+          if (min > max) {
             errorObj[`${provider.id}/categories/${id}`] = `The "min" is more than "max"`
           }
           customGroupDetails[id] = {
             min: min,
             max: max,
             numberOfDefaults: 0,
-            numberOfElements: 0 
+            numberOfElements: 0
           };
         }
       });

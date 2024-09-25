@@ -337,61 +337,61 @@ export const checkOnsearch = (data: any) => {
           const domain = getValue('domain')
           const subdomain = domain?.substring(3)
           if (domain != 'AGR10' && domain != 'RET1A') {
-          switch (subdomain) {
-            case "10":
-            case "13":
-            case "16":
-            case "18":
-              if (itemDescType != "1") {
-                const key = `bpp/providers[${i}]/items[${index}]/descriptor/code`
-                errorObj[key] =
-                  `code should have 1:EAN as a value in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code`
-              }
-              else {
-                const regex = /^\d{8}$|^\d{13}$/
-                if (!regex.test(itemDescCode)) {
+            switch (subdomain) {
+              case "10":
+              case "13":
+              case "16":
+              case "18":
+                if (itemDescType != "1") {
                   const key = `bpp/providers[${i}]/items[${index}]/descriptor/code`
                   errorObj[key] =
-                    `code should provided in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code(${itemDescCode}) should be number and with either length 8 or 13`
+                    `code should have 1:EAN as a value in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code`
                 }
-              }
-              break;
-            case "12":
-              if (itemDescType == "4") {
-                const regex = /^\d{4}$|^\d{6}$|^\d{8}$|^\d{10}$/
-                if (!regex.test(itemDescCode)) {
+                else {
+                  const regex = /^\d{8}$|^\d{13}$/
+                  if (!regex.test(itemDescCode)) {
+                    const key = `bpp/providers[${i}]/items[${index}]/descriptor/code`
+                    errorObj[key] =
+                      `code should provided in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code(${itemDescCode}) should be number and with either length 8 or 13`
+                  }
+                }
+                break;
+              case "12":
+                if (itemDescType == "4") {
+                  const regex = /^\d{4}$|^\d{6}$|^\d{8}$|^\d{10}$/
+                  if (!regex.test(itemDescCode)) {
+                    const key = `bpp/providers[${i}]/items[${index}]/descriptor/code`
+                    errorObj[key] =
+                      `code should provided in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code should be number and have a length 4, 6, 8 or 10.`
+                  }
+                }
+                else {
                   const key = `bpp/providers[${i}]/items[${index}]/descriptor/code`
                   errorObj[key] =
-                    `code should provided in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code should be number and have a length 4, 6, 8 or 10.`
+                    `code should have 4:HSN as a value in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code`
                 }
-              }
-              else {
-                const key = `bpp/providers[${i}]/items[${index}]/descriptor/code`
-                errorObj[key] =
-                  `code should have 4:HSN as a value in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code`
-              }
-              break;
-            case "14":
-            case "15":
-              if (itemDescType == "3") {
-                const regex = /^\d{8}$|^\d{12}$|^\d{13}$|^\d{14}$/
-                if (!regex.test(itemDescCode)) {
+                break;
+              case "14":
+              case "15":
+                if (itemDescType == "3") {
+                  const regex = /^\d{8}$|^\d{12}$|^\d{13}$|^\d{14}$/
+                  if (!regex.test(itemDescCode)) {
+                    const key = `bpp/providers[${i}]/items[${index}]/descriptor/code`
+                    errorObj[key] =
+                      `code should provided in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code should be number and have a length 8, 12, 13 or 14}.`
+                  }
+                }
+                else {
                   const key = `bpp/providers[${i}]/items[${index}]/descriptor/code`
                   errorObj[key] =
-                    `code should provided in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code should be number and have a length 8, 12, 13 or 14}.`
+                    `code should have 3:GTIN as a value in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code`
                 }
-              }
-              else {
+                break;
+              default:
                 const key = `bpp/providers[${i}]/items[${index}]/descriptor/code`
                 errorObj[key] =
-                  `code should have 3:GTIN as a value in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code`
-              }
-              break;
-            default:
-              const key = `bpp/providers[${i}]/items[${index}]/descriptor/code`
-              errorObj[key] =
-                `code should have a valid value in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code`
-              break;
+                  `code should have a valid value in /message/catalog/bpp/providers[${i}]/items[${index}]/descriptor/code`
+                break;
             }
           }
         }
@@ -1039,26 +1039,31 @@ export const checkOnsearch = (data: any) => {
             logger.info(`Checking consumer care details for item id: ${item.id}`)
             if ('@ondc/org/contact_details_consumer_care' in item) {
               let consCare = item['@ondc/org/contact_details_consumer_care']
+              if (typeof consCare === 'string' && consCare.includes(',')) {
+                consCare = consCare.split(',')
 
-              consCare = consCare.split(',')
-
-              if (!isValidPhoneNumber(consCare[2])) {
-                const key = `prvdr${i}consCare`
-                errorObj[key] =
-                  `@ondc/org/contact_details_consumer_care contactno should consist of  10 or  11 digits without any spaces or special characters in /bpp/providers[${i}]/items`
-              }
-
-              if (consCare.length < 3) {
-                const key = `prvdr${i}consCare`
-                errorObj[key] =
-                  `@ondc/org/contact_details_consumer_care should be in the format "name,email,contactno" in /bpp/providers[${i}]/items`
-              } else {
-                const checkEmail: boolean = emailRegex(consCare[1].trim())
-                if (isNaN(consCare[2].trim()) || !checkEmail) {
+                if (!isValidPhoneNumber(consCare[2])) {
                   const key = `prvdr${i}consCare`
                   errorObj[key] =
-                    `@ondc/org/contact_details_consumer_care email should be in /bpp/providers[${i}]/items`
+                    `@ondc/org/contact_details_consumer_care contactno should consist of  10 or  11 digits without any spaces or special characters in /bpp/providers[${i}]/items`
                 }
+
+                if (consCare.length < 3) {
+                  const key = `prvdr${i}consCare`
+                  errorObj[key] =
+                    `@ondc/org/contact_details_consumer_care should be in the format "name,email,contactno" in /bpp/providers[${i}]/items`
+                } else {
+                  const checkEmail: boolean = emailRegex(consCare[1].trim())
+                  if (isNaN(consCare[2].trim()) || !checkEmail) {
+                    const key = `prvdr${i}consCare`
+                    errorObj[key] =
+                      `@ondc/org/contact_details_consumer_care email should be in /bpp/providers[${i}]/items`
+                  }
+                }
+              } else {
+                const key = `prvdr${i}consCare`;
+                errorObj[key] =
+                  `@ondc/org/contact_details_consumer_care is invalid or missing the required format (name,email,contactno) in /bpp/providers[${i}]/items`;
               }
             }
           } catch (error: any) {
